@@ -5,9 +5,9 @@ options
   IGNORE_CASE = true;
 }
 
-PARSER_BEGIN(SimpleDBMSParser)
+PARSER_BEGIN(sqlparser)
 
-public class SimpleDBMSParser
+public class sqlparser
 {
   // define static variable
   public static final int PRINT_SYNTAX_ERROR = 0;
@@ -21,7 +21,7 @@ public class SimpleDBMSParser
   
   public static void main(String args[]) throws ParseException
   {
-    SimpleDBMSParser parser = new SimpleDBMSParser(System.in);
+    sqlparser parser = new sqlparser(System.in);
     System.out.print("DB_2009-13389> ");
 
     while (true)
@@ -33,7 +33,7 @@ public class SimpleDBMSParser
       catch (Exception e)
       {
         printMessage(PRINT_SYNTAX_ERROR);
-        SimpleDBMSParser.ReInit(System.in);
+        sqlparser.ReInit(System.in);
       }
     }
   }
@@ -72,7 +72,7 @@ public class SimpleDBMSParser
   }
 }
 
-PARSER_END(SimpleDBMSParser)
+PARSER_END(sqlparser)
 
 SKIP : {
   "\r" | "\t" | "\n" | < SPACE: " " >
