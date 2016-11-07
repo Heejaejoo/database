@@ -1,0 +1,607 @@
+options
+{
+  static = true;
+  DEBUG_PARSER = false;
+  IGNORE_CASE = true;
+}
+
+PARSER_BEGIN(SimpleDBMSParser)
+
+public class SimpleDBMSParser
+{
+  // define static variable
+  public static final int PRINT_SYNTAX_ERROR = 0;
+  public static final int PRINT_CREATE_TABLE = 1;
+  public static final int PRINT_DROP_TABLE = 2;
+  public static final int PRINT_DESC_TABLE = 3;
+  public static final int PRINT_INSERT_TABLE = 4;
+  public static final int PRINT_DELETE_TABLE = 5;
+  public static final int PRINT_SELECT_TABLE = 6;
+  public static final int PRINT_SHOW_TABLE = 7;
+  
+  public static void main(String args[]) throws ParseException
+  {
+    SimpleDBMSParser parser = new SimpleDBMSParser(System.in);
+    System.out.print("DB_2009-13389> ");
+
+    while (true)
+    {
+      try
+      {
+        parser.command();
+      }
+      catch (Exception e)
+      {
+        printMessage(PRINT_SYNTAX_ERROR);
+        SimpleDBMSParser.ReInit(System.in);
+      }
+    }
+  }
+
+  public static void printMessage(int q)
+  {
+    switch(q)
+    {
+      //use switch statement
+      case PRINT_SYNTAX_ERROR:
+      	System.out.println("Syntax error");
+      	break;
+      case PRINT_CREATE_TABLE:
+      	System.out.println("\'CREATE TABLE\' requested");
+      	break;
+      case PRINT_DROP_TABLE:
+      	System.out.println("\'DROP TABLE\' requested");
+      	break;
+      case PRINT_DESC_TABLE:
+      	System.out.println("\'DESC\' requested");
+      	break;
+      case PRINT_INSERT_TABLE:
+      	System.out.println("\'INSERT\' requested");
+      	break;
+      case PRINT_DELETE_TABLE:
+      	System.out.println("\'DELETE\' requested");
+      	break;
+      case PRINT_SELECT_TABLE:
+      	System.out.println("\'SELECT\' requested");
+      	break;
+      case PRINT_SHOW_TABLE:
+      	System.out.println("\'SHOW TABLES\' requested");
+      	break;
+    }
+    System.out.print("DB_2009-13389> ");
+  }
+}
+
+PARSER_END(SimpleDBMSParser)
+
+SKIP : {
+  "\r" | "\t" | "\n" | < SPACE: " " >
+}
+
+// add tokens for SQL special keywords like as, from, or ...
+TOKEN : /* Keywords */
+{
+  < EXIT : "exit" >
+| < INT : "int" >
+| < CHAR : "char" >
+| < DATE : "date" >
+| < CREATE_TABLE : "create table" >
+| < DROP_TABLE : "drop table" >
+| < INSERT_INTO : "insert into" >
+| < DESC : "desc" >
+| < DELETE_FROM: "delete from" >
+| < SELECT: "select" >
+| < SHOW_TABLES: "show tables" >
+| < NOT_NULL : "not null" >
+| < PRIMARY_KEY : "primary key" >
+| < FOREIGN_KEY : "foreign key" >
+| < REFERENCES : "references" >
+| < VALUES : "values" >
+| < AS : "as" >
+| < FROM : "from" >
+| < WHERE: "where" >
+| < AND: "and" >
+| < OR: "or" >
+| < NOT: "not" >
+| < IS: "is" >
+| < STAR : "*" >
+| < NULL : "null" >
+// specify single letters to avoid char includes them
+| < CREATE : "create" >
+| < TABLE: "table" >
+| < DROP : "drop" >
+| < SHOW : "show" >
+| < TABLES : "tables" >
+| < INSERT : "insert" >
+| < INTO : "into" >
+| < DELETE : "delete" >
+| < PRIMARY: "primary" >
+| < FOREIGN : "foreign" >
+| < KEY : "key" >
+
+}
+
+// add tokens following assignment requirement
+// in NON_QUOTE_SPECIAL_CHARS,
+// only the special characters appearing in MACBOOK PRO except ' are dealt with
+// ~`!@#$%^&*()_+-= { }|[]\:;< >?,./
+
+TOKEN :
+{
+  < SEMICOLON : ";" >
+| < LEFT_PAREN : "(" >
+| < RIGHT_PAREN : ")" >
+| < COMMA : "," >
+| < QUOTE: "'" >
+| < UNDERSCORE : "_" >
+| < SIGN : "+" | "-" >
+| < PERIOD: "." >
+| < DIGIT : [ "0"-"9" ] >
+| < LEGAL_IDENTIFIER : < ALPHABET > (< ALPHABET > | < UNDERSCORE >)* >
+| < ALPHABET : [ "A"-"Z", "a"-"z" ] >
+| < COMP_OP : ">" | "<" | "=" | ">=" | "<=" | "!=" >
+| < INT_VALUE : (< SIGN >)? (< DIGIT >)+>
+| < NNNN  : < DIGIT ><DIGIT ><DIGIT ><DIGIT > > 
+| < NN  : < DIGIT ><DIGIT >>
+| < DATE_VALUE :  < NNNN>"-"< NN >"-"< NN > >
+| < NON_QUOTE_CHARS: < DIGIT > | < ALPHABET >|< NON_QUOTE_SPECIAL_CHARS >|< SPACE >>
+| < NON_QUOTE_SPECIAL_CHARS: [ "~","`","!","@","#","$","%","^","&","*", "(",")","-","_","+","=","{","}","[", "]", "\\", "|",":", ";", ",", "<", ">" ,".","?","/"] >  
+| < CHAR_STRING : < QUOTE >(< NON_QUOTE_CHARS >)*< QUOTE >>  
+}
+
+void command() :
+{}
+{
+  queryList()
+| (
+    < EXIT >
+    < SEMICOLON >
+    {
+      System.exit(0);
+    }
+  ) 
+}
+
+void queryList() :
+{
+  int q;
+}
+{
+  (
+    q = query()
+    < SEMICOLON >
+    {
+      printMessage(q);
+    }
+  )+
+}
+
+
+// query is createtable||droptable||desc||insert||delete||select||showtable query
+int query() :
+{
+  int q;
+} 
+{
+  (
+	createTableQuery()
+	{
+	  q = PRINT_CREATE_TABLE;
+	}
+ |  
+	dropTableQuery()
+	{
+	  q = PRINT_DROP_TABLE;
+	}
+ |
+    descQuery()
+    {
+      q = PRINT_DESC_TABLE;
+    }
+| 
+    insertQuery()
+    {
+      q = PRINT_INSERT_TABLE;
+    }
+ |
+    deleteQuery()
+    {
+      q = PRINT_DELETE_TABLE;
+    }
+|  
+    selectQuery()
+    {
+      q = PRINT_SELECT_TABLE;
+    }
+| 
+    showTableQuery()
+    {
+      q = PRINT_SHOW_TABLE;
+    }
+  )
+  (
+    {
+      return q;
+    }
+  )
+}
+
+void createTableQuery() :
+{}
+{
+  < CREATE_TABLE >
+  tableName()
+  tableElementList()
+}
+
+void dropTableQuery() :
+{}
+{
+  < DROP_TABLE >
+  tableName()
+}
+
+void descQuery() :
+{}
+{
+  < DESC >
+  tableName()
+}
+
+void tableElementList() :
+{}
+{
+  < LEFT_PAREN >
+  tableElement()
+  (
+    < COMMA >
+    tableElement()
+  )*
+  < RIGHT_PAREN >
+}
+
+void tableElement() :
+{
+}
+{
+  columnDefinition()
+| tableConstraintDefinition()
+}
+
+void columnDefinition() :
+{}
+{
+  columnName()
+  dataType()
+  (
+    < NOT_NULL >
+  )?
+}
+
+void tableConstraintDefinition() :
+{}
+{
+  primaryKeyConstraint()
+| referentialConstraint()
+}
+
+void primaryKeyConstraint() :
+{}
+{
+  < PRIMARY_KEY >
+  columnNameList()
+}
+
+void referentialConstraint() :
+{}
+{
+  < FOREIGN_KEY >
+  columnNameList()
+  < REFERENCES >
+  tableName()
+  columnNameList()
+}
+
+void columnNameList() :
+{}
+{
+  < LEFT_PAREN >
+  columnName()
+  (
+    < COMMA >
+    columnName()
+  )*
+  < RIGHT_PAREN >
+}
+
+void dataType() :
+{}
+{
+  < INT >
+| (
+    < CHAR >
+    < LEFT_PAREN >
+    < INT_VALUE >
+    < RIGHT_PAREN >
+  )
+| < DATE >
+}
+
+void tableName() :
+{}
+{
+  < LEGAL_IDENTIFIER >
+}
+
+void columnName() :
+{}
+{
+  < LEGAL_IDENTIFIER >
+}
+
+// insert query consists of <INSERT_INTO > + tableName() + insertColumnsandSources()
+void insertQuery() :
+{}
+{
+	< INSERT_INTO >
+	tableName()
+	insertColumnsandSources()	
+}
+
+// insertColumnsandSources consists of [columnNameList()]? + valueList()
+void insertColumnsandSources() :
+{}
+{
+	(
+	  columnNameList()
+	)?
+	valueList()
+}
+
+//valueList() consists of <VALUES > + ( + value + [< COMMA >, value()]? + )
+void valueList():
+{}
+{
+	< VALUES >
+	< LEFT_PAREN >
+	value()
+	(
+	  < COMMA >
+	  value()
+	)*
+	< RIGHT_PAREN >
+}
+
+//define comparable value
+void comparableValue():
+{}
+{
+  	<INT_VALUE >
+	| < CHAR_STRING >
+	| < DATE_VALUE >
+}
+
+//values are null or comparable value
+void value():
+{}
+{
+	<NULL>
+	| comparableValue() 	
+}
+
+//select query consists of <SELECT > + selectList() + tableExpr()
+void selectQuery() :
+{}
+{
+	< SELECT >
+	selectList()
+	tableExpr()
+}
+
+//select list consists of <STAR > | selectedColumn() + [<COMMA >,selectedColumn()]*	
+void selectList() :
+{}
+{
+	< STAR >
+	|
+	selectedColumn()
+	(
+	  < COMMA >
+	  selectedColumn()
+	)*
+}
+
+// use LOOKAHEAD to avoid TOKEN ambiguity
+// selectedColumn = (tableName+< PERIOD >)? + columnName() + (< AS >columnName)?
+void selectedColumn() :
+{}
+{
+	(
+  	  LOOKAHEAD(2)
+	  tableName()
+	  < PERIOD >
+	)?
+	columnName()
+	(
+	  < AS >
+	  columnName()
+	)?
+}
+
+// tableExpr = fromClause + (whereClause)?
+void tableExpr():
+{}
+{
+	fromClause()
+	(
+	  whereClause()
+	)?
+}
+
+// fromClause = < FROM > + tableReflist()
+void fromClause():
+{}
+{	
+	< FROM >
+	tableReferenceList()
+}
+
+// tableReflist() = referedTable + (< COMMA > + referedTable )*
+void tableReferenceList():
+{}
+{
+	referedTable()
+	(
+	  < COMMA >
+	  referedTable()
+	)*
+}
+
+// referedTable() = tableName + (< AS >tableName)?
+void referedTable():
+{}
+{
+	tableName()
+	(
+	  < AS >
+	  tableName()
+	)?
+}
+
+// whereclause consists of <WHERE > + boolValueexpr
+void whereClause():
+{}
+{
+	< WHERE >
+	booleanValueExpr()
+}
+
+//boolValueexpr = booleanTerm | booleanTerm <OR > booleanValueExpr
+//Same as boolValueExpr = booleanTerm + (< OR > booleanTerm)*
+//disassembling recursive term 
+void booleanValueExpr():
+{}
+{
+	booleanTerm()
+	(
+	  < OR >
+	  booleanTerm()
+	)*
+}
+
+//booleanTerm = booleanfactor | booleanfactor <AND > booleanterm
+//Same as booleanTerm = booleanfactor + (<AND> booleanfactor)*
+//disassembling recursive term 
+void booleanTerm():
+{}
+{
+	booleanFactor()
+	(
+	  < AND >
+	  booleanFactor()
+	)*	 
+}
+
+//booleanfactor = (< NOT >)? + booleanTest;
+void booleanFactor():
+{}
+{
+	(
+	  < NOT >
+	)?
+	booleanTest()
+}
+
+// booleantest = predicate | parenthesizedBoolexpr
+void booleanTest():
+{}
+{
+	predicate()
+	| parenthesizedBoolExpr() 
+}
+
+// parenthesizedBoolexpr = ( + booleanvalueExpr + )
+void parenthesizedBoolExpr():
+{}
+{
+	< LEFT_PAREN >
+	booleanValueExpr()
+	< RIGHT_PAREN >
+}
+
+// use lookahead to prevent TOKEN ambiguity
+// predicate = comparison Predicate | null Predicate
+void predicate() :
+{}
+{
+  	LOOKAHEAD(2)
+	comparisonPredicate()
+	| nullPredicate()
+}
+
+// comparison Predicate = comparion Operand + < COMP_OP > + comparison Operand
+void comparisonPredicate():
+{}
+{
+	compOperand()
+	< COMP_OP >
+	compOperand()
+}
+
+// comparison Operand is comparable value | ( (tableName() + < PERIOD >)? columnName)
+// use lookahead for same reason to above
+void compOperand():
+{}
+{
+  comparableValue()
+| (
+		(
+		  LOOKAHEAD(2)
+		  tableName()
+		  < PERIOD >
+	 	)?
+	 	columnName()
+  )
+}
+
+// null predicate = ( tableName()< PERIOD >)? + columnName() + nullOperation()
+void nullPredicate():
+{}
+{
+  (
+    LOOKAHEAD(2)
+	tableName()
+	< PERIOD >
+  )?
+  columnName()
+  nullOperation()
+}
+
+// null operation consists of <IS > + (< NOT >)? + < NULL >
+void nullOperation():
+{}
+{
+	< IS >
+	(
+	  < NOT >
+	)?
+	< NULL >
+}
+
+// deletequery = < DELETE_FROM > + tableName() + whereclause(optional)
+void deleteQuery() :
+{}
+{
+  < DELETE_FROM >
+  tableName()
+  (
+    whereClause()
+  )?
+}
+
+// show table query is just <SHOW TABLES >
+void showTableQuery() :
+{}
+{
+  < SHOW_TABLES >
+}
