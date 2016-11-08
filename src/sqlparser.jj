@@ -19,24 +19,6 @@ public class sqlparser
   public static final int PRINT_SELECT_TABLE = 6;
   public static final int PRINT_SHOW_TABLE = 7;
   
-  public static void main(String args[]) throws ParseException
-  {
-    sqlparser parser = new sqlparser(System.in);
-    System.out.print("DB_2009-13389> ");
-
-    while (true)
-    {
-      try
-      {
-        parser.command();
-      }
-      catch (Exception e)
-      {
-        printMessage(PRINT_SYNTAX_ERROR);
-        sqlparser.ReInit(System.in);
-      }
-    }
-  }
 
   public static void printMessage(int q)
   {

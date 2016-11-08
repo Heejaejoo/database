@@ -10,24 +10,6 @@ public class sqlparser implements sqlparserConstants {
   public static final int PRINT_SELECT_TABLE = 6;
   public static final int PRINT_SHOW_TABLE = 7;
 
-  public static void main(String args[]) throws ParseException
-  {
-    sqlparser parser = new sqlparser(System.in);
-    System.out.print("DB_2009-13389> ");
-
-    while (true)
-    {
-      try
-      {
-        parser.command();
-      }
-      catch (Exception e)
-      {
-        printMessage(PRINT_SYNTAX_ERROR);
-        sqlparser.ReInit(System.in);
-      }
-    }
-  }
 
   public static void printMessage(int q)
   {
@@ -684,27 +666,14 @@ public class sqlparser implements sqlparserConstants {
     finally { jj_save(3, xla); }
   }
 
-  static private boolean jj_3R_13() {
-    Token xsp;
-    xsp = jj_scanpos;
-    if (jj_scan_token(53)) {
-    jj_scanpos = xsp;
-    if (jj_scan_token(59)) {
-    jj_scanpos = xsp;
-    if (jj_scan_token(56)) return true;
-    }
-    }
+  static private boolean jj_3_2() {
+    if (jj_3R_9()) return true;
     return false;
   }
 
   static private boolean jj_3_1() {
     if (jj_scan_token(50)) return true;
     if (jj_scan_token(PERIOD)) return true;
-    return false;
-  }
-
-  static private boolean jj_3_2() {
-    if (jj_3R_9()) return true;
     return false;
   }
 
@@ -746,6 +715,19 @@ public class sqlparser implements sqlparserConstants {
   static private boolean jj_3_4() {
     if (jj_scan_token(50)) return true;
     if (jj_scan_token(PERIOD)) return true;
+    return false;
+  }
+
+  static private boolean jj_3R_13() {
+    Token xsp;
+    xsp = jj_scanpos;
+    if (jj_scan_token(53)) {
+    jj_scanpos = xsp;
+    if (jj_scan_token(59)) {
+    jj_scanpos = xsp;
+    if (jj_scan_token(56)) return true;
+    }
+    }
     return false;
   }
 
