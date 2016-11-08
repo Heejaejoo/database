@@ -11,4 +11,12 @@ public class PrimaryKeyConstraint {
 		return this.columnNameList;
 	}
 	
+	public void printAll(){
+		System.out.println("primary key:");
+		for(int i=0; i<this.columnNameList.size(); ++i){
+			System.out.println(this.columnNameList.get(i));
+		}
+		System.out.println("");
+	}
+	
 }

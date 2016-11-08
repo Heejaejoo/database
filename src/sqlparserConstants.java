@@ -85,41 +85,41 @@ public interface sqlparserConstants {
   /** RegularExpression Id. */
   int SEMICOLON = 41;
   /** RegularExpression Id. */
-  int LEFT_PAREN = 42;
+  int LEGAL_IDENTIFIER = 42;
   /** RegularExpression Id. */
-  int RIGHT_PAREN = 43;
+  int LEFT_PAREN = 43;
   /** RegularExpression Id. */
-  int COMMA = 44;
+  int RIGHT_PAREN = 44;
   /** RegularExpression Id. */
-  int QUOTE = 45;
+  int COMMA = 45;
   /** RegularExpression Id. */
   int UNDERSCORE = 46;
   /** RegularExpression Id. */
-  int SIGN = 47;
+  int COMP_OP = 47;
   /** RegularExpression Id. */
-  int PERIOD = 48;
+  int SIGN = 48;
   /** RegularExpression Id. */
-  int DIGIT = 49;
+  int PERIOD = 49;
   /** RegularExpression Id. */
-  int LEGAL_IDENTIFIER = 50;
+  int DIGIT = 50;
   /** RegularExpression Id. */
-  int ALPHABET = 51;
+  int CHAR_STRING = 51;
   /** RegularExpression Id. */
-  int COMP_OP = 52;
+  int INT_VALUE = 52;
   /** RegularExpression Id. */
-  int INT_VALUE = 53;
+  int DATE_VALUE = 53;
   /** RegularExpression Id. */
   int NNNN = 54;
   /** RegularExpression Id. */
   int NN = 55;
   /** RegularExpression Id. */
-  int DATE_VALUE = 56;
+  int QUOTE = 56;
   /** RegularExpression Id. */
-  int NON_QUOTE_CHARS = 57;
+  int ALPHABET = 57;
   /** RegularExpression Id. */
-  int NON_QUOTE_SPECIAL_CHARS = 58;
+  int NON_QUOTE_CHARS = 58;
   /** RegularExpression Id. */
-  int CHAR_STRING = 59;
+  int NON_QUOTE_SPECIAL_CHARS = 59;
 
   /** Lexical state. */
   int DEFAULT = 0;
@@ -168,24 +168,24 @@ public interface sqlparserConstants {
     "\"foreign\"",
     "\"key\"",
     "\";\"",
+    "<LEGAL_IDENTIFIER>",
     "\"(\"",
     "\")\"",
     "\",\"",
-    "\"\\\'\"",
     "\"_\"",
+    "<COMP_OP>",
     "<SIGN>",
     "\".\"",
     "<DIGIT>",
-    "<LEGAL_IDENTIFIER>",
-    "<ALPHABET>",
-    "<COMP_OP>",
+    "<CHAR_STRING>",
     "<INT_VALUE>",
+    "<DATE_VALUE>",
     "<NNNN>",
     "<NN>",
-    "<DATE_VALUE>",
+    "\"\\\'\"",
+    "<ALPHABET>",
     "<NON_QUOTE_CHARS>",
     "<NON_QUOTE_SPECIAL_CHARS>",
-    "<CHAR_STRING>",
   };
 
 }

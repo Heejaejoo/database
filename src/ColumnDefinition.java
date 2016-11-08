@@ -15,17 +15,18 @@ public class ColumnDefinition {
 	public boolean isNotNull(){
 		return this.notNull;
 	}
-	
-	public ColumnDefinition(String name, int type, boolean notnull){
-		this.columnName = name;
-		this.type = new DataType(type);
-		this.notNull = notnull;
-		
+	public void printAll(){
+		System.out.println("ColumnDefinition");
+		System.out.printf("Name: %s\n", this.columnName);
+		this.type.printAll();
+		if(this.notNull){
+			System.out.printf("not null\n");
+		}
 	}
 	
-	public ColumnDefinition(String name, int type, int len, boolean notnull){
+	public ColumnDefinition(String name, DataType type, boolean notnull){
 		this.columnName = name;
-		this.type = new DataType(type, len);
+		this.type = type;
 		this.notNull = notnull;
 	}
 }

@@ -7,6 +7,8 @@ options
 
 PARSER_BEGIN(sqlparser)
 
+import java.util.ArrayList;
+
 public class sqlparser
 {
   // define static variable
@@ -111,24 +113,25 @@ TOKEN : /* Keywords */
 TOKEN :
 {
   < SEMICOLON : ";" >
+| < LEGAL_IDENTIFIER : < ALPHABET > (< ALPHABET > | < UNDERSCORE >)* >
 | < LEFT_PAREN : "(" >
 | < RIGHT_PAREN : ")" >
 | < COMMA : "," >
-| < QUOTE: "'" >
 | < UNDERSCORE : "_" >
+| < COMP_OP : ">" | "<" | "=" | ">=" | "<=" | "!=" >
 | < SIGN : "+" | "-" >
 | < PERIOD: "." >
 | < DIGIT : [ "0"-"9" ] >
-| < LEGAL_IDENTIFIER : < ALPHABET > (< ALPHABET > | < UNDERSCORE >)* >
-| < ALPHABET : [ "A"-"Z", "a"-"z" ] >
-| < COMP_OP : ">" | "<" | "=" | ">=" | "<=" | "!=" >
+| < CHAR_STRING : < QUOTE >(< NON_QUOTE_CHARS >)*< QUOTE >> 
 | < INT_VALUE : (< SIGN >)? (< DIGIT >)+>
-| < NNNN  : < DIGIT ><DIGIT ><DIGIT ><DIGIT > > 
-| < NN  : < DIGIT ><DIGIT >>
-| < DATE_VALUE :  < NNNN>"-"< NN >"-"< NN > >
-| < NON_QUOTE_CHARS: < DIGIT > | < ALPHABET >|< NON_QUOTE_SPECIAL_CHARS >|< SPACE >>
+| < DATE_VALUE : < NNNN >"-"< NN >"-"< NN > >
+| < NNNN  : < DIGIT><DIGIT ><DIGIT ><DIGIT > > 
+| < NN  : <DIGIT ><DIGIT > >
+| < QUOTE: "\'" >
+| < ALPHABET : [ "A"-"Z", "a"-"z" ] >
+| < NON_QUOTE_CHARS: < DIGIT > | < ALPHABET > | < NON_QUOTE_SPECIAL_CHARS > | < SPACE > >
 | < NON_QUOTE_SPECIAL_CHARS: [ "~","`","!","@","#","$","%","^","&","*", "(",")","-","_","+","=","{","}","[", "]", "\\", "|",":", ";", ",", "<", ">" ,".","?","/"] >  
-| < CHAR_STRING : < QUOTE >(< NON_QUOTE_CHARS >)*< QUOTE >>  
+
 }
 
 void command() :
@@ -163,10 +166,11 @@ void queryList() :
 int query() :
 {
   int q;
+  CreateTableQuery cq;
 } 
 {
   (
-	createTableQuery()
+	cq = createTableQuery()
 	{
 	  q = PRINT_CREATE_TABLE;
 	}
@@ -208,12 +212,22 @@ int query() :
   )
 }
 
-void createTableQuery() :
-{}
+CreateTableQuery createTableQuery() :
+{
+  String name;
+  CreateTableQuery query;
+}
 {
   < CREATE_TABLE >
-  tableName()
-  tableElementList()
+  name = tableName()
+  {
+    query = new CreateTableQuery(name);
+  }
+  tableElementList(query)
+  {
+    query.printAll();
+    return query;
+  }
 }
 
 void dropTableQuery() :
@@ -224,101 +238,180 @@ void dropTableQuery() :
 }
 
 void descQuery() :
-{}
+{
+  Token t;
+}
 {
   < DESC >
   tableName()
 }
 
-void tableElementList() :
+void tableElementList(CreateTableQuery q) :
 {}
 {
   < LEFT_PAREN >
-  tableElement()
+  tableElement(q)
   (
     < COMMA >
-    tableElement()
+    tableElement(q)
   )*
   < RIGHT_PAREN >
 }
 
-void tableElement() :
+void tableElement(CreateTableQuery q) :
 {
 }
 {
-  columnDefinition()
-| tableConstraintDefinition()
+  columnDefinition(q)
+| tableConstraintDefinition(q)
+
 }
 
-void columnDefinition() :
-{}
+void columnDefinition(CreateTableQuery q) :
 {
-  columnName()
-  dataType()
+  boolean notnull = false;
+  String colname;
+  DataType type;
+}
+{
+  colname = columnName()
+  type = dataType()
   (
     < NOT_NULL >
+    {
+      notnull = true;
+    }
   )?
+  {
+    q.addDefinition(new ColumnDefinition(colname, type, notnull));
+  }
 }
 
-void tableConstraintDefinition() :
-{}
+void tableConstraintDefinition(CreateTableQuery q) :
 {
-  primaryKeyConstraint()
-| referentialConstraint()
+  PrimaryKeyConstraint a;
+  ReferentialConstraint b;
+}
+{
+  (	    a = primaryKeyConstraint()
+	  {
+	    q.addPrimaryKeyConst(a);
+	  }
+  )
+| (
+  b = referentialConstraint()
+	{
+  		q.addReferentialKeyConst(b);
+	}
+)
 }
 
-void primaryKeyConstraint() :
-{}
+PrimaryKeyConstraint primaryKeyConstraint() :
+{
+ 	ArrayList<String > list;
+}
 {
   < PRIMARY_KEY >
-  columnNameList()
+  list = columnNameList()
+  {
+    return new PrimaryKeyConstraint(list);
+  }
 }
 
-void referentialConstraint() :
-{}
+ReferentialConstraint referentialConstraint() :
+{
+  ArrayList<String > list;
+  ArrayList<String > namelist;
+  String colname;
+}
 {
   < FOREIGN_KEY >
-  columnNameList()
+  list = columnNameList()
   < REFERENCES >
-  tableName()
-  columnNameList()
+  colname = tableName()
+  namelist = columnNameList()
+  {
+	return new ReferentialConstraint(list, colname, namelist);
+  }
 }
 
-void columnNameList() :
-{}
+ArrayList<String > columnNameList() :
+{
+  ArrayList<String > list = new ArrayList<String >();
+  String s;
+ }
 {
   < LEFT_PAREN >
-  columnName()
+  s = columnName()
+  {
+    list.add(s);
+  }
   (
     < COMMA >
-    columnName()
+    s = columnName()
+    {
+    	list.add(s);
+  	}
   )*
   < RIGHT_PAREN >
+  {
+    return list;
+  }
 }
 
-void dataType() :
-{}
+DataType dataType() :
 {
-  < INT >
-| (
-    < CHAR >
-    < LEFT_PAREN >
-    < INT_VALUE >
-    < RIGHT_PAREN >
-  )
-| < DATE >
+  Token length;
+  DataType type;
+}
+{
+
+  	(	  	  (    		    < INT >
+			{
+				type = new DataType(0);
+			}
+		)
+	| (
+	    < CHAR >
+	    < LEFT_PAREN >
+	    length = < INT_VALUE >
+	    < RIGHT_PAREN >
+	    {
+	     type = new DataType(1, (Integer.parseInt(length.toString())));
+	    }
+	  )
+	| (
+	  	< DATE >
+		{
+		  type = new DataType(2);
+		}
+	  )
+	)
+  {
+	return type;
+  }
 }
 
-void tableName() :
-{}
+String tableName() :
 {
-  < LEGAL_IDENTIFIER >
+  Token t; 
+}
+{
+  t = < LEGAL_IDENTIFIER >
+  {
+    return t.toString();
+  }
 }
 
-void columnName() :
-{}
+String columnName() :
 {
-  < LEGAL_IDENTIFIER >
+  Token t;
+}
+{
+  t = < LEGAL_IDENTIFIER >
+  {
+	return t.toString();
+  }
 }
 
 // insert query consists of <INSERT_INTO > + tableName() + insertColumnsandSources()
