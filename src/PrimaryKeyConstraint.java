@@ -1,20 +1,35 @@
 import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.Set;
 
 public class PrimaryKeyConstraint {
-	private ArrayList<String> columnNameList = new ArrayList<String>();
+	private ArrayList<String> cols = new ArrayList<String>();
 	
-	public PrimaryKeyConstraint(ArrayList<String> columnnamelist){
-		this.columnNameList.addAll(columnnamelist);
+	private boolean checkColumnDuplicate(ArrayList<String> cols){
+		Set<String> set = new HashSet<String>();
+		for(int i=0; i<cols.size(); ++i){
+			set.add(cols.get(i));
+		}
+		return cols.size() != set.size();
 	}
 	
-	public ArrayList<String> getColumnNameList(){
-		return this.columnNameList;
+	public PrimaryKeyConstraint(ArrayList<String> c) throws MyException{
+		//check duplicate attributes in the column list
+		if(checkColumnDuplicate(c)){
+			throw new MyException(Messages.DuplicateColumnDefError);
+		}
+		this.cols.addAll(cols);
 	}
+	
+	public ArrayList<String> getcols(){
+		return this.cols;
+	}
+	
 	
 	public void printAll(){
 		System.out.println("primary key:");
-		for(int i=0; i<this.columnNameList.size(); ++i){
-			System.out.println(this.columnNameList.get(i));
+		for(int i=0; i<this.cols.size(); ++i){
+			System.out.println(this.cols.get(i));
 		}
 		System.out.println("");
 	}

@@ -12,7 +12,6 @@ public class sqlparser implements sqlparserConstants {
   public static final int PRINT_SELECT_TABLE = 6;
   public static final int PRINT_SHOW_TABLE = 7;
 
-
   public static void printMessage(int q)
   {
     switch(q)
@@ -20,15 +19,6 @@ public class sqlparser implements sqlparserConstants {
       //use switch statement
       case PRINT_SYNTAX_ERROR:
         System.out.println("Syntax error");
-        break;
-      case PRINT_CREATE_TABLE:
-        System.out.println("\u005c'CREATE TABLE\u005c' requested");
-        break;
-      case PRINT_DROP_TABLE:
-        System.out.println("\u005c'DROP TABLE\u005c' requested");
-        break;
-      case PRINT_DESC_TABLE:
-        System.out.println("\u005c'DESC\u005c' requested");
         break;
       case PRINT_INSERT_TABLE:
         System.out.println("\u005c'INSERT\u005c' requested");
@@ -46,7 +36,7 @@ public class sqlparser implements sqlparserConstants {
     System.out.print("DB_2009-13389> ");
   }
 
-  static final public void command() throws ParseException {
+  static final public void command() throws ParseException, Exception, MyException {
     switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
     case CREATE_TABLE:
     case DROP_TABLE:
@@ -69,7 +59,7 @@ public class sqlparser implements sqlparserConstants {
     }
   }
 
-  static final public void queryList() throws ParseException {
+  static final public void queryList() throws ParseException, Exception, MyException {
   int q;
     label_1:
     while (true) {
@@ -94,12 +84,11 @@ public class sqlparser implements sqlparserConstants {
   }
 
 // query is createtable||droptable||desc||insert||delete||select||showtable query
-  static final public int query() throws ParseException {
+  static final public int query() throws ParseException, Exception, MyException {
   int q;
-  CreateTableQuery cq;
     switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
     case CREATE_TABLE:
-      cq = createTableQuery();
+      createTableQuery();
           q = PRINT_CREATE_TABLE;
       break;
     case DROP_TABLE:
@@ -135,16 +124,14 @@ public class sqlparser implements sqlparserConstants {
     throw new Error("Missing return statement in function");
   }
 
-  static final public CreateTableQuery createTableQuery() throws ParseException {
+  static final public void createTableQuery() throws ParseException, Exception, MyException {
   String name;
   CreateTableQuery query;
     jj_consume_token(CREATE_TABLE);
     name = tableName();
     query = new CreateTableQuery(name);
     tableElementList(query);
-    query.printAll();
-    {if (true) return query;}
-    throw new Error("Missing return statement in function");
+        query.execute();
   }
 
   static final public void dropTableQuery() throws ParseException {
@@ -158,7 +145,7 @@ public class sqlparser implements sqlparserConstants {
     tableName();
   }
 
-  static final public void tableElementList(CreateTableQuery q) throws ParseException {
+  static final public void tableElementList(CreateTableQuery q) throws ParseException, MyException {
     jj_consume_token(LEFT_PAREN);
     tableElement(q);
     label_2:
@@ -177,7 +164,7 @@ public class sqlparser implements sqlparserConstants {
     jj_consume_token(RIGHT_PAREN);
   }
 
-  static final public void tableElement(CreateTableQuery q) throws ParseException {
+  static final public void tableElement(CreateTableQuery q) throws ParseException, MyException {
     switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
     case LEGAL_IDENTIFIER:
       columnDefinition(q);
@@ -193,7 +180,7 @@ public class sqlparser implements sqlparserConstants {
     }
   }
 
-  static final public void columnDefinition(CreateTableQuery q) throws ParseException {
+  static final public void columnDefinition(CreateTableQuery q) throws ParseException, MyException {
   boolean notnull = false;
   String colname;
   DataType type;
@@ -208,10 +195,10 @@ public class sqlparser implements sqlparserConstants {
       jj_la1[5] = jj_gen;
       ;
     }
-    q.addDefinition(new ColumnDefinition(colname, type, notnull));
+    q.addColumn(new Column(colname, type, notnull));
   }
 
-  static final public void tableConstraintDefinition(CreateTableQuery q) throws ParseException {
+  static final public void tableConstraintDefinition(CreateTableQuery q) throws ParseException, MyException {
   PrimaryKeyConstraint a;
   ReferentialConstraint b;
     switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
@@ -230,7 +217,7 @@ public class sqlparser implements sqlparserConstants {
     }
   }
 
-  static final public PrimaryKeyConstraint primaryKeyConstraint() throws ParseException {
+  static final public PrimaryKeyConstraint primaryKeyConstraint() throws ParseException, MyException {
         ArrayList<String > list;
     jj_consume_token(PRIMARY_KEY);
     list = columnNameList();
@@ -238,7 +225,7 @@ public class sqlparser implements sqlparserConstants {
     throw new Error("Missing return statement in function");
   }
 
-  static final public ReferentialConstraint referentialConstraint() throws ParseException {
+  static final public ReferentialConstraint referentialConstraint() throws ParseException, MyException {
   ArrayList<String > list;
   ArrayList<String > namelist;
   String colname;
@@ -276,7 +263,7 @@ public class sqlparser implements sqlparserConstants {
     throw new Error("Missing return statement in function");
   }
 
-  static final public DataType dataType() throws ParseException {
+  static final public DataType dataType() throws ParseException, MyException {
   Token length;
   DataType type;
     switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
@@ -680,8 +667,12 @@ public class sqlparser implements sqlparserConstants {
   }
 
 // show table query is just <SHOW TABLES >
-  static final public void showTableQuery() throws ParseException {
+  static final public void showTableQuery() throws ParseException, Exception {
+  ShowTableQuery query;
     jj_consume_token(SHOW_TABLES);
+    query = new ShowTableQuery();
+    System.out.println("here2");
+    query.print();
   }
 
   static private boolean jj_2_1(int xla) {
@@ -710,6 +701,35 @@ public class sqlparser implements sqlparserConstants {
     try { return !jj_3_4(); }
     catch(LookaheadSuccess ls) { return true; }
     finally { jj_save(3, xla); }
+  }
+
+  static private boolean jj_3R_14() {
+    Token xsp;
+    xsp = jj_scanpos;
+    if (jj_scan_token(52)) {
+    jj_scanpos = xsp;
+    if (jj_scan_token(51)) {
+    jj_scanpos = xsp;
+    if (jj_scan_token(53)) return true;
+    }
+    }
+    return false;
+  }
+
+  static private boolean jj_3R_15() {
+    if (jj_scan_token(LEGAL_IDENTIFIER)) return true;
+    return false;
+  }
+
+  static private boolean jj_3_1() {
+    if (jj_3R_9()) return true;
+    if (jj_scan_token(PERIOD)) return true;
+    return false;
+  }
+
+  static private boolean jj_3_2() {
+    if (jj_3R_10()) return true;
+    return false;
   }
 
   static private boolean jj_3R_13() {
@@ -755,35 +775,6 @@ public class sqlparser implements sqlparserConstants {
   static private boolean jj_3_4() {
     if (jj_3R_9()) return true;
     if (jj_scan_token(PERIOD)) return true;
-    return false;
-  }
-
-  static private boolean jj_3R_14() {
-    Token xsp;
-    xsp = jj_scanpos;
-    if (jj_scan_token(52)) {
-    jj_scanpos = xsp;
-    if (jj_scan_token(51)) {
-    jj_scanpos = xsp;
-    if (jj_scan_token(53)) return true;
-    }
-    }
-    return false;
-  }
-
-  static private boolean jj_3R_15() {
-    if (jj_scan_token(LEGAL_IDENTIFIER)) return true;
-    return false;
-  }
-
-  static private boolean jj_3_1() {
-    if (jj_3R_9()) return true;
-    if (jj_scan_token(PERIOD)) return true;
-    return false;
-  }
-
-  static private boolean jj_3_2() {
-    if (jj_3R_10()) return true;
     return false;
   }
 

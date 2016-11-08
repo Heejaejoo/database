@@ -21,7 +21,6 @@ public class sqlparser
   public static final int PRINT_SELECT_TABLE = 6;
   public static final int PRINT_SHOW_TABLE = 7;
   
-
   public static void printMessage(int q)
   {
     switch(q)
@@ -29,15 +28,6 @@ public class sqlparser
       //use switch statement
       case PRINT_SYNTAX_ERROR:
       	System.out.println("Syntax error");
-      	break;
-      case PRINT_CREATE_TABLE:
-      	System.out.println("\'CREATE TABLE\' requested");
-      	break;
-      case PRINT_DROP_TABLE:
-      	System.out.println("\'DROP TABLE\' requested");
-      	break;
-      case PRINT_DESC_TABLE:
-      	System.out.println("\'DESC\' requested");
       	break;
       case PRINT_INSERT_TABLE:
       	System.out.println("\'INSERT\' requested");
@@ -134,7 +124,7 @@ TOKEN :
 
 }
 
-void command() :
+void command() throws Exception, MyException:
 {}
 {
   queryList()
@@ -142,12 +132,13 @@ void command() :
     < EXIT >
     < SEMICOLON >
     {
+      
       System.exit(0);
     }
   ) 
 }
 
-void queryList() :
+void queryList() throws Exception, MyException:
 {
   int q;
 }
@@ -163,14 +154,13 @@ void queryList() :
 
 
 // query is createtable||droptable||desc||insert||delete||select||showtable query
-int query() :
+int query() throws Exception, MyException:
 {
   int q;
-  CreateTableQuery cq;
 } 
 {
   (
-	cq = createTableQuery()
+	createTableQuery()
 	{
 	  q = PRINT_CREATE_TABLE;
 	}
@@ -212,7 +202,7 @@ int query() :
   )
 }
 
-CreateTableQuery createTableQuery() :
+void createTableQuery() throws Exception, MyException:
 {
   String name;
   CreateTableQuery query;
@@ -225,8 +215,7 @@ CreateTableQuery createTableQuery() :
   }
   tableElementList(query)
   {
-    query.printAll();
-    return query;
+	query.execute();
   }
 }
 
@@ -246,7 +235,7 @@ void descQuery() :
   tableName()
 }
 
-void tableElementList(CreateTableQuery q) :
+void tableElementList(CreateTableQuery q) throws MyException:
 {}
 {
   < LEFT_PAREN >
@@ -258,7 +247,7 @@ void tableElementList(CreateTableQuery q) :
   < RIGHT_PAREN >
 }
 
-void tableElement(CreateTableQuery q) :
+void tableElement(CreateTableQuery q) throws MyException:
 {
 }
 {
@@ -267,7 +256,7 @@ void tableElement(CreateTableQuery q) :
 
 }
 
-void columnDefinition(CreateTableQuery q) :
+void columnDefinition(CreateTableQuery q) throws MyException:
 {
   boolean notnull = false;
   String colname;
@@ -283,11 +272,11 @@ void columnDefinition(CreateTableQuery q) :
     }
   )?
   {
-    q.addDefinition(new ColumnDefinition(colname, type, notnull));
+    q.addColumn(new Column(colname, type, notnull));
   }
 }
 
-void tableConstraintDefinition(CreateTableQuery q) :
+void tableConstraintDefinition(CreateTableQuery q) throws MyException:
 {
   PrimaryKeyConstraint a;
   ReferentialConstraint b;
@@ -306,7 +295,7 @@ void tableConstraintDefinition(CreateTableQuery q) :
 )
 }
 
-PrimaryKeyConstraint primaryKeyConstraint() :
+PrimaryKeyConstraint primaryKeyConstraint() throws MyException :
 {
  	ArrayList<String > list;
 }
@@ -318,7 +307,7 @@ PrimaryKeyConstraint primaryKeyConstraint() :
   }
 }
 
-ReferentialConstraint referentialConstraint() :
+ReferentialConstraint referentialConstraint() throws MyException:
 {
   ArrayList<String > list;
   ArrayList<String > namelist;
@@ -359,7 +348,7 @@ ArrayList<String > columnNameList() :
   }
 }
 
-DataType dataType() :
+DataType dataType() throws MyException:
 {
   Token length;
   DataType type;
@@ -675,8 +664,15 @@ void deleteQuery() :
 }
 
 // show table query is just <SHOW TABLES >
-void showTableQuery() :
-{}
+void showTableQuery() throws Exception:
+{
+  ShowTableQuery query;
+ }
 {
   < SHOW_TABLES >
+  {
+    query = new ShowTableQuery();
+    System.out.println("here2");
+    query.print();
+  }
 }

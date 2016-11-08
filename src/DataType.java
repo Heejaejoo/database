@@ -1,5 +1,6 @@
+import java.io.Serializable;
 
-public class DataType {
+public class DataType implements Serializable{
 	int datatype;
 	int length;
 	String INT = "int";
@@ -21,8 +22,22 @@ public class DataType {
 	public DataType(int num){
 		this.datatype = num;
 	}
-	public DataType(int num, int len){
+	public DataType(int num, int len) throws MyException{
 		this.datatype = num;
 		this.length = len;
+		if(len<=0){
+			throw new MyException(Messages.CharLengthError);
+		}
 	}
+	
+	public boolean equals(DataType oth){
+		if(this.datatype == 1 && oth.datatype == 1){
+			return this.length == oth.length;
+		}else{
+			return this.datatype == oth.datatype;
+		}
+	}
+	
+	
+	
 }

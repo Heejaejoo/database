@@ -1,10 +1,28 @@
 import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.Set;
 public class ReferentialConstraint {
 	private ArrayList<String> columnNameList = new ArrayList<String>();
 	private String referencedTable;
 	private ArrayList<String> refColumnNameList = new ArrayList<String>();
 	
-	public ReferentialConstraint(ArrayList<String> columnnamelist, String referenced, ArrayList<String> referencedList){
+	private boolean checkColumnDuplicate(ArrayList<String> cols){
+		Set<String> set = new HashSet<String>();
+		for(int i=0; i<cols.size(); ++i){
+			set.add(cols.get(i));
+		}
+		return cols.size() != set.size();
+	}
+	
+	public ReferentialConstraint(ArrayList<String> columnnamelist, String referenced, ArrayList<String> referencedList) throws MyException{
+		//referenced column name duplicate check
+		if(checkColumnDuplicate(columnnamelist)){
+			throw new MyException(Messages.DuplicateColumnDefError);
+		}
+		//referenced column name duplicate check
+		if(checkColumnDuplicate(referencedList)){
+			throw new MyException(Messages.DuplicateColumnDefError);
+		}
 		this.columnNameList.addAll(columnnamelist);
 		this.referencedTable = referenced;
 		this.refColumnNameList.addAll(referencedList);
@@ -14,7 +32,7 @@ public class ReferentialConstraint {
 		return this.columnNameList;
 	}
 	
-	public String getReferencedTable(){
+	public String getReferencedTableName(){
 		return this.referencedTable;
 	}
 	

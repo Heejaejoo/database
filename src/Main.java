@@ -12,11 +12,17 @@ public class Main {
 	      try
 	      {
 	        parser.command();
+	      }catch (MyException e){
+	    	  System.out.println(e.getMessage());
+	    	  e.printStackTrace();
+	    	  sqlparser.ReInit(System.in);
 	      }
 	      catch (Exception e)
 	      {
+	    	System.out.println(e.getMessage());
+	    	e.printStackTrace();
 	        parser.printMessage(0);
-	        sqlparser.ReInit(System.in);
+	        parser.ReInit(System.in);
 	      }
 	    }
 	  }
