@@ -5,8 +5,6 @@ public class Main {
 	  {
 	    sqlparser parser = new sqlparser(System.in);
 	    System.out.print("DB_2009-13389> ");
-	    ArrayList<Query> result = new ArrayList();
-	    
 	    while (true)
 	    {
 	      try
@@ -16,16 +14,19 @@ public class Main {
 	    	  System.out.println(e.getMessage());
 	   // 	  e.printStackTrace();
 	    	  sqlparser.ReInit(System.in);
+			  System.out.print("DB_2009-13389> ");
 	      }
 	      catch (ParseException e)
 	      {
 	    	System.out.println(e.getMessage());
-	    	e.printStackTrace();
+	    	//e.printStackTrace();
 	        System.out.println("Syntax error");
+		    System.out.print("DB_2009-13389> ");
 	        parser.ReInit(System.in);
 	      }catch (Exception e){
 	    	  e.printStackTrace();
 	    	  System.out.println("Unhandled Exception");
+			  System.out.print("DB_2009-13389> ");
 	    	  parser.ReInit(System.in);
 	      }
 	    }

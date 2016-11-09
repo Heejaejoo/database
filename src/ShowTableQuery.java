@@ -4,7 +4,7 @@ public class ShowTableQuery extends Query{
 	DBManager dbman = DBManager.dbman();
 	ArrayList<Table> list = null;;
 	public ShowTableQuery() throws Exception{
-		list = dbman.getAll();
+		list = dbman.getAll(0);
 	}
 	
 	public void execute(){

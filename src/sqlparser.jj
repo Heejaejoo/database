@@ -131,6 +131,9 @@ void queryList() throws Exception, MyException:
     {
       if(q != null) { 
       	handleQuery(q);
+     }else {
+		System.out.println("Unsupported Query");
+		System.out.printf("DB_2009-13389> ");
      }
     }
   )+
@@ -211,12 +214,15 @@ CreateTableQuery createTableQuery() throws Exception, MyException:
 }
 
 Query dropTableQuery() :
-{}
+{
+  String t;
+}
 {
   < DROP_TABLE >
-  tableName()
+  t = tableName()
   {
-	return null;
+	DropTableQuery query = new DropTableQuery(t);
+	return query;
   }
 }
 

@@ -86,7 +86,7 @@ public class DBManager implements Serializable{
 		}catch (DatabaseException de){
 			
 		}catch (UnsupportedEncodingException e){
-			e.printStackTrace();
+			//e.printStackTrace();
 		}finally{
 			cursor.close();
 			if(num != -1){
@@ -97,7 +97,30 @@ public class DBManager implements Serializable{
 		return retrievedData;
 	}
 	
-	public ArrayList<Table> getAll() throws Exception, MyException{
+	public int delete(String tableName) throws Exception{
+		int success = 0;
+		try{
+			cursor = this.myDatabase.openCursor(null, null);
+			key = new DatabaseEntry(tableName.getBytes("UTF-8"));
+			data = new DatabaseEntry();
+			if (cursor.getSearchKey(key, data, LockMode.DEFAULT) == OperationStatus.SUCCESS){
+			    cursor.delete();
+			    success = 1;
+			}else{
+				throw new MyException(Messages.NoSuchTable);
+			}
+		}catch (DatabaseException de){
+			
+		}catch (UnsupportedEncodingException e){
+			//e.printStackTrace();
+		}finally{
+			cursor.close();
+			close();
+		}
+		return success;
+	}
+	
+	public ArrayList<Table> getAll(int num) throws Exception, MyException{
 		ArrayList<Table> res = new ArrayList<Table>();
 		try{
 			cursor = this.myDatabase.openCursor(null, null);
@@ -113,7 +136,8 @@ public class DBManager implements Serializable{
 		}catch (DatabaseException de){
 		}finally{
 			cursor.close();
-			close();
+			if(num != -1)
+				close();
 		}
 		return res;
 	}

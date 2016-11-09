@@ -5,9 +5,11 @@ options
   IGNORE_CASE = true;
 }
 
-PARSER_BEGIN(SimpleDBMSParser)
+PARSER_BEGIN(sqlparser)
 
-public class SimpleDBMSParser
+import java.util.ArrayList;
+
+public class sqlparser
 {
   // define static variable
   public static final int PRINT_SYNTAX_ERROR = 0;
@@ -19,60 +21,14 @@ public class SimpleDBMSParser
   public static final int PRINT_SELECT_TABLE = 6;
   public static final int PRINT_SHOW_TABLE = 7;
   
-  public static void main(String args[]) throws ParseException
+  public static void handleQuery(Query q) throws Exception, MyException
   {
-    SimpleDBMSParser parser = new SimpleDBMSParser(System.in);
-    System.out.print("DB_2009-13389> ");
-
-    while (true)
-    {
-      try
-      {
-        parser.command();
-      }
-      catch (Exception e)
-      {
-        printMessage(PRINT_SYNTAX_ERROR);
-        SimpleDBMSParser.ReInit(System.in);
-      }
-    }
-  }
-
-  public static void printMessage(int q)
-  {
-    switch(q)
-    {
-      //use switch statement
-      case PRINT_SYNTAX_ERROR:
-      	System.out.println("Syntax error");
-      	break;
-      case PRINT_CREATE_TABLE:
-      	System.out.println("\'CREATE TABLE\' requested");
-      	break;
-      case PRINT_DROP_TABLE:
-      	System.out.println("\'DROP TABLE\' requested");
-      	break;
-      case PRINT_DESC_TABLE:
-      	System.out.println("\'DESC\' requested");
-      	break;
-      case PRINT_INSERT_TABLE:
-      	System.out.println("\'INSERT\' requested");
-      	break;
-      case PRINT_DELETE_TABLE:
-      	System.out.println("\'DELETE\' requested");
-      	break;
-      case PRINT_SELECT_TABLE:
-      	System.out.println("\'SELECT\' requested");
-      	break;
-      case PRINT_SHOW_TABLE:
-      	System.out.println("\'SHOW TABLES\' requested");
-      	break;
-    }
+    q.execute();
     System.out.print("DB_2009-13389> ");
   }
 }
 
-PARSER_END(SimpleDBMSParser)
+PARSER_END(sqlparser)
 
 SKIP : {
   "\r" | "\t" | "\n" | < SPACE: " " >
@@ -129,27 +85,28 @@ TOKEN : /* Keywords */
 TOKEN :
 {
   < SEMICOLON : ";" >
+| < LEGAL_IDENTIFIER : < ALPHABET > (< ALPHABET > | < UNDERSCORE >)* >
 | < LEFT_PAREN : "(" >
 | < RIGHT_PAREN : ")" >
 | < COMMA : "," >
-| < QUOTE: "'" >
 | < UNDERSCORE : "_" >
+| < COMP_OP : ">" | "<" | "=" | ">=" | "<=" | "!=" >
 | < SIGN : "+" | "-" >
 | < PERIOD: "." >
-| < DIGIT : [ "0"-"9" ] >
-| < LEGAL_IDENTIFIER : < ALPHABET > (< ALPHABET > | < UNDERSCORE >)* >
-| < ALPHABET : [ "A"-"Z", "a"-"z" ] >
-| < COMP_OP : ">" | "<" | "=" | ">=" | "<=" | "!=" >
 | < INT_VALUE : (< SIGN >)? (< DIGIT >)+>
-| < NNNN  : < DIGIT ><DIGIT ><DIGIT ><DIGIT > > 
-| < NN  : < DIGIT ><DIGIT >>
-| < DATE_VALUE :  < NNNN>"-"< NN >"-"< NN > >
-| < NON_QUOTE_CHARS: < DIGIT > | < ALPHABET >|< NON_QUOTE_SPECIAL_CHARS >|< SPACE >>
+| < DIGIT : [ "0"-"9" ] >
+| < CHAR_STRING : < QUOTE >(< NON_QUOTE_CHARS >)*< QUOTE >> 
+| < DATE_VALUE : < NNNN >"-"< NN >"-"< NN > >
+| < NNNN  : < DIGIT><DIGIT ><DIGIT ><DIGIT > > 
+| < NN  : <DIGIT ><DIGIT > >
+| < QUOTE: "\'" >
+| < ALPHABET : [ "A"-"Z", "a"-"z" ] >
+| < NON_QUOTE_CHARS: < DIGIT > | < ALPHABET > | < NON_QUOTE_SPECIAL_CHARS > | < SPACE > >
 | < NON_QUOTE_SPECIAL_CHARS: [ "~","`","!","@","#","$","%","^","&","*", "(",")","-","_","+","=","{","}","[", "]", "\\", "|",":", ";", ",", "<", ">" ,".","?","/"] >  
-| < CHAR_STRING : < QUOTE >(< NON_QUOTE_CHARS >)*< QUOTE >>  
+
 }
 
-void command() :
+void command() throws Exception, MyException:
 {}
 {
   queryList()
@@ -157,195 +114,312 @@ void command() :
     < EXIT >
     < SEMICOLON >
     {
+      
       System.exit(0);
     }
   ) 
 }
 
-void queryList() :
+void queryList() throws Exception, MyException:
 {
-  int q;
+    Query q;
 }
 {
   (
     q = query()
-    < SEMICOLON >
+    < SEMICOLON>
     {
-      printMessage(q);
+      if(q != null) { 
+      	handleQuery(q);
+     }else {
+		System.out.println("Unsupported Query");
+		System.out.printf("DB_2009-13389> ");
+     }
     }
   )+
 }
 
 
 // query is createtable||droptable||desc||insert||delete||select||showtable query
-int query() :
+Query query() throws Exception, MyException:
 {
-  int q;
+  Query q;
 } 
 {
-  (
-	createTableQuery()
-	{
-	  q = PRINT_CREATE_TABLE;
-	}
- |  
-	dropTableQuery()
-	{
-	  q = PRINT_DROP_TABLE;
-	}
+  
+	 (	   q = createTableQuery()
+	   {
+	     return q;
+	   }
+	 )
+ |  (	
+	 q = dropTableQuery()
+	 {
+		return q;
+	 }
+	)
  |
-    descQuery()
-    {
-      q = PRINT_DESC_TABLE;
-    }
+    ( 
+     q= descQuery()
+     {
+       return q;
+     }
+  )
 | 
-    insertQuery()
-    {
-      q = PRINT_INSERT_TABLE;
-    }
+   (      
+     q = insertQuery()
+     {
+       return q;
+     }
+  )
  |
-    deleteQuery()
-    {
-      q = PRINT_DELETE_TABLE;
-    }
+   (
+     q = deleteQuery()
+     {
+       return q;
+     }
+  )
 |  
-    selectQuery()
-    {
-      q = PRINT_SELECT_TABLE;
-    }
+   (
+     q = selectQuery()
+     {
+       return q;
+     }
+  	)
 | 
-    showTableQuery()
-    {
-      q = PRINT_SHOW_TABLE;
-    }
-  )
-  (
-    {
-      return q;
-    }
-  )
+    (
+     
+     q = showTableQuery()
+     {
+       return q;
+     }
+	)
 }
 
-void createTableQuery() :
-{}
+CreateTableQuery createTableQuery() throws Exception, MyException:
+{
+  String name;
+  CreateTableQuery query;
+}
 {
   < CREATE_TABLE >
-  tableName()
-  tableElementList()
+  name = tableName()
+  {
+    query = new CreateTableQuery(name);
+  }
+  tableElementList(query)
+  {
+	return query;
+  }
 }
 
-void dropTableQuery() :
-{}
+Query dropTableQuery() :
+{
+  String t;
+}
 {
   < DROP_TABLE >
-  tableName()
+  t = tableName()
+  {
+	DropTableQuery query = new DropTableQuery(t);
+	return query;
+  }
 }
 
-void descQuery() :
-{}
+DescQuery descQuery() throws MyException, Exception:
+{
+  String t;
+}
 {
   < DESC >
-  tableName()
+  t = tableName()
+  {
+    DescQuery query = new DescQuery(t);
+    {
+      return query;
+    }
+  }
 }
 
-void tableElementList() :
+void tableElementList(CreateTableQuery q) throws MyException:
 {}
 {
   < LEFT_PAREN >
-  tableElement()
+  tableElement(q)
   (
     < COMMA >
-    tableElement()
+    tableElement(q)
   )*
   < RIGHT_PAREN >
 }
 
-void tableElement() :
+void tableElement(CreateTableQuery q) throws MyException:
 {
 }
 {
-  columnDefinition()
-| tableConstraintDefinition()
+  columnDefinition(q)
+| tableConstraintDefinition(q)
+
 }
 
-void columnDefinition() :
-{}
+void columnDefinition(CreateTableQuery q) throws MyException:
 {
-  columnName()
-  dataType()
+  boolean notnull = false;
+  String colname;
+  DataType type;
+}
+{
+  colname = columnName()
+  type = dataType()
   (
     < NOT_NULL >
+    {
+      notnull = true;
+    }
   )?
+  {
+    q.addColumn(new Column(colname, type, notnull));
+  }
 }
 
-void tableConstraintDefinition() :
-{}
+void tableConstraintDefinition(CreateTableQuery q) throws MyException:
 {
-  primaryKeyConstraint()
-| referentialConstraint()
+  PrimaryKeyConstraint a;
+  ReferentialConstraint b;
+}
+{
+  (	    a = primaryKeyConstraint()
+	  {
+	    q.addPrimaryKeyConst(a);
+	  }
+  )
+| (
+  b = referentialConstraint()
+	{
+  		q.addReferentialKeyConst(b);
+	}
+)
 }
 
-void primaryKeyConstraint() :
-{}
+PrimaryKeyConstraint primaryKeyConstraint() throws MyException :
+{
+ 	ArrayList<String > list;
+}
 {
   < PRIMARY_KEY >
-  columnNameList()
+  list = columnNameList()
+  {
+    return new PrimaryKeyConstraint(list);
+  }
 }
 
-void referentialConstraint() :
-{}
+ReferentialConstraint referentialConstraint() throws MyException:
+{
+  ArrayList<String > list;
+  ArrayList<String > namelist;
+  String colname;
+}
 {
   < FOREIGN_KEY >
-  columnNameList()
+  list = columnNameList()
   < REFERENCES >
-  tableName()
-  columnNameList()
+  colname = tableName()
+  namelist = columnNameList()
+  {
+	return new ReferentialConstraint(list, colname, namelist);
+  }
 }
 
-void columnNameList() :
-{}
+ArrayList<String > columnNameList() :
+{
+  ArrayList<String > list = new ArrayList<String >();
+  String s;
+ }
 {
   < LEFT_PAREN >
-  columnName()
+  s = columnName()
+  {
+    list.add(s);
+  }
   (
     < COMMA >
-    columnName()
+    s = columnName()
+    {
+    	list.add(s);
+  	}
   )*
   < RIGHT_PAREN >
+  {
+    return list;
+  }
 }
 
-void dataType() :
-{}
+DataType dataType() throws MyException:
 {
-  < INT >
-| (
-    < CHAR >
-    < LEFT_PAREN >
-    < INT_VALUE >
-    < RIGHT_PAREN >
-  )
-| < DATE >
+  Token length;
+  DataType type;
+}
+{
+
+  	(	  	  (    		    < INT >
+			{
+				type = new DataType(0);
+			}
+		)
+	| (
+	    < CHAR >
+	    < LEFT_PAREN >
+	    length = < INT_VALUE >
+	    < RIGHT_PAREN >
+	    {
+	     type = new DataType(1, (Integer.parseInt(length.toString())));
+	    }
+	  )
+	| (
+	  	< DATE >
+		{
+		  type = new DataType(2);
+		}
+	  )
+	)
+  {
+	return type;
+  }
 }
 
-void tableName() :
-{}
+String tableName() :
 {
-  < LEGAL_IDENTIFIER >
+  Token t; 
+}
+{
+  t = < LEGAL_IDENTIFIER >
+  {
+    return t.toString();
+  }
 }
 
-void columnName() :
-{}
+String columnName() :
 {
-  < LEGAL_IDENTIFIER >
+  Token t;
+}
+{
+  t = < LEGAL_IDENTIFIER >
+  {
+	return t.toString();
+  }
 }
 
 // insert query consists of <INSERT_INTO > + tableName() + insertColumnsandSources()
-void insertQuery() :
+Query insertQuery() :
 {}
 {
 	< INSERT_INTO >
 	tableName()
-	insertColumnsandSources()	
+	insertColumnsandSources()
+	{
+		return null;
+	}
+
 }
 
 // insertColumnsandSources consists of [columnNameList()]? + valueList()
@@ -390,12 +464,15 @@ void value():
 }
 
 //select query consists of <SELECT > + selectList() + tableExpr()
-void selectQuery() :
+Query selectQuery() :
 {}
 {
 	< SELECT >
 	selectList()
-	tableExpr()
+	tableExpr() { 
+		return null;
+	}
+	
 }
 
 //select list consists of <STAR > | selectedColumn() + [<COMMA >,selectedColumn()]*	
@@ -589,7 +666,7 @@ void nullOperation():
 }
 
 // deletequery = < DELETE_FROM > + tableName() + whereclause(optional)
-void deleteQuery() :
+Query deleteQuery() :
 {}
 {
   < DELETE_FROM >
@@ -597,11 +674,20 @@ void deleteQuery() :
   (
     whereClause()
   )?
+  {
+	return null;
+  }
 }
 
 // show table query is just <SHOW TABLES >
-void showTableQuery() :
-{}
+ShowTableQuery showTableQuery() throws Exception:
+{
+  ShowTableQuery query;
+ }
 {
   < SHOW_TABLES >
+  {
+    query = new ShowTableQuery();
+    return query;
+  }
 }
