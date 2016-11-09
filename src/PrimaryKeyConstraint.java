@@ -18,13 +18,12 @@ public class PrimaryKeyConstraint {
 		if(checkColumnDuplicate(c)){
 			throw new MyException(Messages.DuplicateColumnDefError);
 		}
-		this.cols.addAll(cols);
+		this.cols.addAll(c);
 	}
 	
 	public ArrayList<String> getcols(){
 		return this.cols;
 	}
-	
 	
 	public void printAll(){
 		System.out.println("primary key:");

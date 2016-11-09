@@ -30,19 +30,26 @@ public class DBManager implements Serializable{
 	DatabaseEntry key;
 	DatabaseEntry data;
 	EntryBinding<Table> dataBinding;
-	public DBManager(){
+	StoredClassCatalog classCatalog;
+	
+	private DBManager(){
 		this.envConfig.setAllowCreate(true);
-		dbConfig.setAllowCreate(true);
-		dbConfig.setSortedDuplicates(true);
+		this.dbConfig.setAllowCreate(true);
+		this.dbConfig.setSortedDuplicates(true);
 		this.myDbEnvironment = new Environment(new File("db/"), envConfig);
 		this.myDatabase = myDbEnvironment.openDatabase(null, "myDb", this.dbConfig);
 	    this.dbConfig.setSortedDuplicates(false);
 		this.myClassDb = myDbEnvironment.openDatabase(null, "classDb", this.dbConfig);
-		StoredClassCatalog classCatalog = new StoredClassCatalog(myClassDb);
-		dataBinding = new SerialBinding<Table>(classCatalog, Table.class);
+		this.classCatalog = new StoredClassCatalog(myClassDb);
+		this.dataBinding = new SerialBinding<Table>(classCatalog, Table.class);
 	}
 	
-	public int put(Table tb) throws MyException{
+	//can only access through this func
+	static DBManager dbman() {
+	    return new DBManager();
+	 }
+	
+	public void put(Table tb) throws MyException{
 		try{
 			cursor = this.myDatabase.openCursor(null, null);
 			key = new DatabaseEntry(tb.getName().getBytes("UTF-8"));
@@ -51,10 +58,7 @@ public class DBManager implements Serializable{
 			DatabaseEntry emptyData = new DatabaseEntry();
 			if(cursor.getSearchKey(key, emptyData, LockMode.DEFAULT) == OperationStatus.NOTFOUND){
 				cursor.put(key, data);
-				cursor.close();
-				return 1;
 			}else{
-				cursor.close();
 				throw new MyException(Messages.TableExistenceError);
 			}
 			
@@ -63,22 +67,20 @@ public class DBManager implements Serializable{
 		}catch (UnsupportedEncodingException e){
 			e.printStackTrace();
 		}finally {
+			cursor.close();
 			close();
 		}
-		return -1;
 	}
 	
-	public Table get(String tableName) throws Exception{
+	public Table get(String tableName, int num) throws Exception{
+		Table retrievedData = null;
 		try{
 			cursor = this.myDatabase.openCursor(null, null);
 			key = new DatabaseEntry(tableName.getBytes("UTF-8"));
 			data = new DatabaseEntry();
 			if (cursor.getSearchKey(key, data, LockMode.DEFAULT) == OperationStatus.SUCCESS){
-			    Table retrievedData = (Table) dataBinding.entryToObject(data);
-			    cursor.close();
-			    return retrievedData;
+			    retrievedData = (Table) dataBinding.entryToObject(data);
 			}else{
-				cursor.close();
 				throw new MyException(Messages.ReferenceTableExistenceError);
 			}
 		}catch (DatabaseException de){
@@ -87,9 +89,12 @@ public class DBManager implements Serializable{
 			e.printStackTrace();
 		}finally{
 			cursor.close();
+			if(num != -1){
+				close();	
+			}
 		}
-
-		return null;
+		
+		return retrievedData;
 	}
 	
 	public ArrayList<Table> getAll() throws Exception, MyException{
@@ -101,21 +106,19 @@ public class DBManager implements Serializable{
 			if(cursor.getFirst(key, data, LockMode.DEFAULT) != OperationStatus.SUCCESS){
 				throw new MyException(Messages.ShowTablesNoTable);
 			};
-		
 			do{
 				Table retrievedData = (Table) dataBinding.entryToObject(data);
 				res.add(retrievedData);
 			}while(cursor.getNext(key, data, LockMode.DEFAULT) == OperationStatus.SUCCESS);
-			cursor.close();
-			return res;
 		}catch (DatabaseException de){
 		}finally{
+			cursor.close();
 			close();
 		}
-		return null;
+		return res;
 	}
 	
-	private void close(){
+	public void close(){
 		if(this.myDatabase != null){
 			this.myDatabase.close();
 			this.myClassDb.close();

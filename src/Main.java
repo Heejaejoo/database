@@ -1,11 +1,11 @@
 import java.util.ArrayList;
 
 public class Main {
-	  public static void main(String args[]) throws ParseException
+	  public static void main(String args[]) throws ParseException, Exception, MyException
 	  {
 	    sqlparser parser = new sqlparser(System.in);
 	    System.out.print("DB_2009-13389> ");
-	    ArrayList<String> parsedResult = new ArrayList();
+	    ArrayList<Query> result = new ArrayList();
 	    
 	    while (true)
 	    {
@@ -14,15 +14,19 @@ public class Main {
 	        parser.command();
 	      }catch (MyException e){
 	    	  System.out.println(e.getMessage());
-	    	  e.printStackTrace();
+	   // 	  e.printStackTrace();
 	    	  sqlparser.ReInit(System.in);
 	      }
-	      catch (Exception e)
+	      catch (ParseException e)
 	      {
 	    	System.out.println(e.getMessage());
 	    	e.printStackTrace();
-	        parser.printMessage(0);
+	        System.out.println("Syntax error");
 	        parser.ReInit(System.in);
+	      }catch (Exception e){
+	    	  e.printStackTrace();
+	    	  System.out.println("Unhandled Exception");
+	    	  parser.ReInit(System.in);
 	      }
 	    }
 	  }

@@ -1,6 +1,10 @@
 import java.io.Serializable;
 
 public class DataType implements Serializable{
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
 	int datatype;
 	int length;
 	String INT = "int";
@@ -27,6 +31,15 @@ public class DataType implements Serializable{
 		this.length = len;
 		if(len<=0){
 			throw new MyException(Messages.CharLengthError);
+		}
+	}
+	public String getString(){
+		if(datatype == 0){
+			return INT;
+		}else if(datatype == 2){
+			return DATE;
+		}else{
+			return "char(" + String.valueOf(this.length) + ")";
 		}
 	}
 	

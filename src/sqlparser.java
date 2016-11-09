@@ -12,27 +12,9 @@ public class sqlparser implements sqlparserConstants {
   public static final int PRINT_SELECT_TABLE = 6;
   public static final int PRINT_SHOW_TABLE = 7;
 
-  public static void printMessage(int q)
+  public static void handleQuery(Query q) throws Exception, MyException
   {
-    switch(q)
-    {
-      //use switch statement
-      case PRINT_SYNTAX_ERROR:
-        System.out.println("Syntax error");
-        break;
-      case PRINT_INSERT_TABLE:
-        System.out.println("\u005c'INSERT\u005c' requested");
-        break;
-      case PRINT_DELETE_TABLE:
-        System.out.println("\u005c'DELETE\u005c' requested");
-        break;
-      case PRINT_SELECT_TABLE:
-        System.out.println("\u005c'SELECT\u005c' requested");
-        break;
-      case PRINT_SHOW_TABLE:
-        System.out.println("\u005c'SHOW TABLES\u005c' requested");
-        break;
-    }
+    q.execute();
     System.out.print("DB_2009-13389> ");
   }
 
@@ -60,12 +42,14 @@ public class sqlparser implements sqlparserConstants {
   }
 
   static final public void queryList() throws ParseException, Exception, MyException {
-  int q;
+    Query q;
     label_1:
     while (true) {
       q = query();
       jj_consume_token(SEMICOLON);
-      printMessage(q);
+      if(q != null) {
+        handleQuery(q);
+     }
       switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
       case CREATE_TABLE:
       case DROP_TABLE:
@@ -84,65 +68,72 @@ public class sqlparser implements sqlparserConstants {
   }
 
 // query is createtable||droptable||desc||insert||delete||select||showtable query
-  static final public int query() throws ParseException, Exception, MyException {
-  int q;
+  static final public Query query() throws ParseException, Exception, MyException {
+  Query q;
     switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
     case CREATE_TABLE:
-      createTableQuery();
-          q = PRINT_CREATE_TABLE;
+      q = createTableQuery();
+             {if (true) return q;}
       break;
     case DROP_TABLE:
-      dropTableQuery();
-          q = PRINT_DROP_TABLE;
+      q = dropTableQuery();
+                {if (true) return q;}
       break;
     case DESC:
-      descQuery();
-      q = PRINT_DESC_TABLE;
+      q = descQuery();
+       {if (true) return q;}
       break;
     case INSERT_INTO:
-      insertQuery();
-      q = PRINT_INSERT_TABLE;
+      q = insertQuery();
+       {if (true) return q;}
       break;
     case DELETE_FROM:
-      deleteQuery();
-      q = PRINT_DELETE_TABLE;
+      q = deleteQuery();
+       {if (true) return q;}
       break;
     case SELECT:
-      selectQuery();
-      q = PRINT_SELECT_TABLE;
+      q = selectQuery();
+       {if (true) return q;}
       break;
     case SHOW_TABLES:
-      showTableQuery();
-      q = PRINT_SHOW_TABLE;
+      q = showTableQuery();
+       {if (true) return q;}
       break;
     default:
       jj_la1[2] = jj_gen;
       jj_consume_token(-1);
       throw new ParseException();
     }
-      {if (true) return q;}
     throw new Error("Missing return statement in function");
   }
 
-  static final public void createTableQuery() throws ParseException, Exception, MyException {
+  static final public CreateTableQuery createTableQuery() throws ParseException, Exception, MyException {
   String name;
   CreateTableQuery query;
     jj_consume_token(CREATE_TABLE);
     name = tableName();
     query = new CreateTableQuery(name);
     tableElementList(query);
-        query.execute();
+        {if (true) return query;}
+    throw new Error("Missing return statement in function");
   }
 
-  static final public void dropTableQuery() throws ParseException {
+  static final public Query dropTableQuery() throws ParseException {
     jj_consume_token(DROP_TABLE);
     tableName();
+        {if (true) return null;}
+    throw new Error("Missing return statement in function");
   }
 
-  static final public void descQuery() throws ParseException {
-  Token t;
+  static final public DescQuery descQuery() throws ParseException, MyException, Exception {
+  String t;
     jj_consume_token(DESC);
-    tableName();
+    t = tableName();
+    DescQuery query = new DescQuery(t);
+    {
+      {if (true) return query;}
+    }
+    throw new Error("Missing return statement in function");
   }
 
   static final public void tableElementList(CreateTableQuery q) throws ParseException, MyException {
@@ -306,10 +297,12 @@ public class sqlparser implements sqlparserConstants {
   }
 
 // insert query consists of <INSERT_INTO > + tableName() + insertColumnsandSources()
-  static final public void insertQuery() throws ParseException {
+  static final public Query insertQuery() throws ParseException {
     jj_consume_token(INSERT_INTO);
     tableName();
     insertColumnsandSources();
+                {if (true) return null;}
+    throw new Error("Missing return statement in function");
   }
 
 // insertColumnsandSources consists of [columnNameList()]? + valueList()
@@ -371,8 +364,8 @@ public class sqlparser implements sqlparserConstants {
     case NULL:
       jj_consume_token(NULL);
       break;
-    case CHAR_STRING:
     case INT_VALUE:
+    case CHAR_STRING:
     case DATE_VALUE:
       comparableValue();
       break;
@@ -384,10 +377,12 @@ public class sqlparser implements sqlparserConstants {
   }
 
 //select query consists of <SELECT > + selectList() + tableExpr()
-  static final public void selectQuery() throws ParseException {
+  static final public Query selectQuery() throws ParseException {
     jj_consume_token(SELECT);
     selectList();
     tableExpr();
+                {if (true) return null;}
+    throw new Error("Missing return statement in function");
   }
 
 //select list consists of <STAR > | selectedColumn() + [<COMMA >,selectedColumn()]*	
@@ -554,8 +549,8 @@ public class sqlparser implements sqlparserConstants {
   static final public void booleanTest() throws ParseException {
     switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
     case LEGAL_IDENTIFIER:
-    case CHAR_STRING:
     case INT_VALUE:
+    case CHAR_STRING:
     case DATE_VALUE:
       predicate();
       break;
@@ -605,8 +600,8 @@ public class sqlparser implements sqlparserConstants {
 // use lookahead for same reason to above
   static final public void compOperand() throws ParseException {
     switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
-    case CHAR_STRING:
     case INT_VALUE:
+    case CHAR_STRING:
     case DATE_VALUE:
       comparableValue();
       break;
@@ -653,7 +648,7 @@ public class sqlparser implements sqlparserConstants {
   }
 
 // deletequery = < DELETE_FROM > + tableName() + whereclause(optional)
-  static final public void deleteQuery() throws ParseException {
+  static final public Query deleteQuery() throws ParseException {
     jj_consume_token(DELETE_FROM);
     tableName();
     switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
@@ -664,15 +659,17 @@ public class sqlparser implements sqlparserConstants {
       jj_la1[26] = jj_gen;
       ;
     }
+        {if (true) return null;}
+    throw new Error("Missing return statement in function");
   }
 
 // show table query is just <SHOW TABLES >
-  static final public void showTableQuery() throws ParseException, Exception {
+  static final public ShowTableQuery showTableQuery() throws ParseException, Exception {
   ShowTableQuery query;
     jj_consume_token(SHOW_TABLES);
     query = new ShowTableQuery();
-    System.out.println("here2");
-    query.print();
+    {if (true) return query;}
+    throw new Error("Missing return statement in function");
   }
 
   static private boolean jj_2_1(int xla) {
@@ -703,32 +700,8 @@ public class sqlparser implements sqlparserConstants {
     finally { jj_save(3, xla); }
   }
 
-  static private boolean jj_3R_14() {
-    Token xsp;
-    xsp = jj_scanpos;
-    if (jj_scan_token(52)) {
-    jj_scanpos = xsp;
-    if (jj_scan_token(51)) {
-    jj_scanpos = xsp;
-    if (jj_scan_token(53)) return true;
-    }
-    }
-    return false;
-  }
-
   static private boolean jj_3R_15() {
     if (jj_scan_token(LEGAL_IDENTIFIER)) return true;
-    return false;
-  }
-
-  static private boolean jj_3_1() {
-    if (jj_3R_9()) return true;
-    if (jj_scan_token(PERIOD)) return true;
-    return false;
-  }
-
-  static private boolean jj_3_2() {
-    if (jj_3R_10()) return true;
     return false;
   }
 
@@ -755,11 +728,6 @@ public class sqlparser implements sqlparserConstants {
     return false;
   }
 
-  static private boolean jj_3R_9() {
-    if (jj_scan_token(LEGAL_IDENTIFIER)) return true;
-    return false;
-  }
-
   static private boolean jj_3R_10() {
     if (jj_3R_11()) return true;
     if (jj_scan_token(COMP_OP)) return true;
@@ -775,6 +743,35 @@ public class sqlparser implements sqlparserConstants {
   static private boolean jj_3_4() {
     if (jj_3R_9()) return true;
     if (jj_scan_token(PERIOD)) return true;
+    return false;
+  }
+
+  static private boolean jj_3R_9() {
+    if (jj_scan_token(LEGAL_IDENTIFIER)) return true;
+    return false;
+  }
+
+  static private boolean jj_3R_14() {
+    Token xsp;
+    xsp = jj_scanpos;
+    if (jj_scan_token(50)) {
+    jj_scanpos = xsp;
+    if (jj_scan_token(52)) {
+    jj_scanpos = xsp;
+    if (jj_scan_token(53)) return true;
+    }
+    }
+    return false;
+  }
+
+  static private boolean jj_3_1() {
+    if (jj_3R_9()) return true;
+    if (jj_scan_token(PERIOD)) return true;
+    return false;
+  }
+
+  static private boolean jj_3_2() {
+    if (jj_3R_10()) return true;
     return false;
   }
 
@@ -801,7 +798,7 @@ public class sqlparser implements sqlparserConstants {
       jj_la1_0 = new int[] {0xfe20,0xfe00,0xfe00,0x0,0x60000,0x10000,0x60000,0x0,0x1c0,0x0,0x0,0x0,0x20000000,0x0,0x10000000,0x200000,0x800000,0x0,0x200000,0x2000000,0x1000000,0x4000000,0x0,0x0,0x0,0x4000000,0x800000,};
    }
    private static void jj_la1_init_1() {
-      jj_la1_1 = new int[] {0x0,0x0,0x0,0x2000,0x400,0x0,0x0,0x2000,0x0,0x800,0x2000,0x380000,0x380000,0x2000,0x400,0x0,0x0,0x2000,0x0,0x0,0x0,0x0,0x380c00,0x400,0x380400,0x0,0x0,};
+      jj_la1_1 = new int[] {0x0,0x0,0x0,0x2000,0x400,0x0,0x0,0x2000,0x0,0x800,0x2000,0x340000,0x340000,0x2000,0x400,0x0,0x0,0x2000,0x0,0x0,0x0,0x0,0x340c00,0x400,0x340400,0x0,0x0,};
    }
   static final private JJCalls[] jj_2_rtns = new JJCalls[4];
   static private boolean jj_rescan = false;

@@ -29,10 +29,12 @@ public class Table implements Serializable{
 	public Table(String tn, ArrayList<Column> cols, ArrayList<PrimaryKeyConstraint> pks) throws MyException, Exception{
 		this.tableName = tn;
 		this.columns.addAll(cols);
+		// Column Duplicate check
 		if(checkColumnDuplicate(cols)){
 			throw new MyException(Messages.DuplicateColumnDefError);
 		}
-		// primary key정의가 두번이상나온 경
+		
+		// primary key정의가 두번이상나온 경우
 		if(pks.size()>1){
 			throw new MyException(Messages.DuplicatePrimaryKeyDefError);
 		}
@@ -48,25 +50,24 @@ public class Table implements Serializable{
 			for(int i=0; i<cons.getcols().size(); ++i){
 				String name = cons.getcols().get(i);
 				if(!nameset.contains(name)){
-					throw new MyException(Messages.NonExistingColumnDefError);
+					throw new MyException(String.format(Messages.NonExistingColumnDefError, name));
 				}	
 			}
 			// set Primary key
 			for(String pk : cons.getcols()){
 				for(Column col: this.columns){
-					if(!col.isNotNull()){
-						throw new MyException(Messages.PrimaryKeyNullError);
-					}
 					if(col.getName().equals(pk)){
+						//setting this column as not null;
+						if(!col.isNotNull()){
+							col.setNotNull();
+						}
 						col.setPK();
 						this.PKcount++;
 					}
 				}
 			}
-		}
-		
-		// handle no references
-				
+		}	
+		// handle no references			
 	}
 	
 

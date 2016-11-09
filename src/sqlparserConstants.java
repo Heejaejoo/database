@@ -101,11 +101,11 @@ public interface sqlparserConstants {
   /** RegularExpression Id. */
   int PERIOD = 49;
   /** RegularExpression Id. */
-  int DIGIT = 50;
+  int INT_VALUE = 50;
   /** RegularExpression Id. */
-  int CHAR_STRING = 51;
+  int DIGIT = 51;
   /** RegularExpression Id. */
-  int INT_VALUE = 52;
+  int CHAR_STRING = 52;
   /** RegularExpression Id. */
   int DATE_VALUE = 53;
   /** RegularExpression Id. */
@@ -176,9 +176,9 @@ public interface sqlparserConstants {
     "<COMP_OP>",
     "<SIGN>",
     "\".\"",
+    "<INT_VALUE>",
     "<DIGIT>",
     "<CHAR_STRING>",
-    "<INT_VALUE>",
     "<DATE_VALUE>",
     "<NNNN>",
     "<NN>",

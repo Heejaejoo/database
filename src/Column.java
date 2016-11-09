@@ -1,13 +1,18 @@
 import java.io.Serializable;
+import java.util.ArrayList;
 
 public class Column implements Serializable{
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = -3723635484032957157L;
 	private String columnName;
 	private DataType type;
 	private boolean notNull;
 	private boolean PK = false;
 	private boolean FK = false;
-	private String referingTable;
-	private String referingColumn;
+	private ArrayList<String> referingTable = new ArrayList<String> ();
+	private ArrayList<String> referingColumn = new ArrayList<String> (); 
 	
 	public String getName(){
 		return this.columnName;
@@ -19,6 +24,9 @@ public class Column implements Serializable{
 	
 	public boolean isNotNull(){
 		return this.notNull;
+	}
+	public void setNotNull(){
+		this.notNull = true;
 	}
 	
 	public void printAll(){
@@ -46,18 +54,18 @@ public class Column implements Serializable{
 		this.FK = true;
 	}
 	public void setReftb(String tbname){
-		this.referingTable = tbname;
+		this.referingTable.add(tbname);
 	}
 	
 	public void setRefcol(String colname){
-		this.referingColumn = colname;
+		this.referingColumn.add(colname);
 	}
 	
-	public String getReftb(){
+	public ArrayList<String> getReftb(){
 		return this.referingTable;
 	}
 	
-	public String getRefcol(){
+	public ArrayList<String> getRefcol(){
 		return this.referingColumn;
 	}
 	

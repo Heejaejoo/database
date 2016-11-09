@@ -1,4 +1,4 @@
 
 public abstract class Query {
-	abstract void execute();
+	abstract void execute() throws MyException, Exception;
 }
