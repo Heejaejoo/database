@@ -81,6 +81,9 @@ public class DBManager implements Serializable{
 			if (cursor.getSearchKey(key, data, LockMode.DEFAULT) == OperationStatus.SUCCESS){
 			    retrievedData = (Table) dataBinding.entryToObject(data);
 			}else{
+				if(num==2){
+					throw new MyException(Messages.NoSuchTable);
+				}
 				throw new MyException(Messages.ReferenceTableExistenceError);
 			}
 		}catch (DatabaseException de){
@@ -118,6 +121,7 @@ public class DBManager implements Serializable{
 			close();
 		}
 		return success;
+		
 	}
 	
 	public ArrayList<Table> getAll(int num) throws Exception, MyException{

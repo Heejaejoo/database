@@ -290,14 +290,14 @@ public class sqlparser implements sqlparserConstants {
   static final public String tableName() throws ParseException {
   Token t;
     t = jj_consume_token(LEGAL_IDENTIFIER);
-    {if (true) return t.toString();}
+    {if (true) return t.toString().toLowerCase();}
     throw new Error("Missing return statement in function");
   }
 
   static final public String columnName() throws ParseException {
   Token t;
     t = jj_consume_token(LEGAL_IDENTIFIER);
-        {if (true) return t.toString();}
+        {if (true) return t.toString().toLowerCase();}
     throw new Error("Missing return statement in function");
   }
 
@@ -705,6 +705,11 @@ public class sqlparser implements sqlparserConstants {
     finally { jj_save(3, xla); }
   }
 
+  static private boolean jj_3R_15() {
+    if (jj_scan_token(LEGAL_IDENTIFIER)) return true;
+    return false;
+  }
+
   static private boolean jj_3R_13() {
     Token xsp;
     xsp = jj_scanpos;
@@ -728,15 +733,15 @@ public class sqlparser implements sqlparserConstants {
     return false;
   }
 
-  static private boolean jj_3_3() {
-    if (jj_3R_9()) return true;
-    if (jj_scan_token(PERIOD)) return true;
-    return false;
-  }
-
   static private boolean jj_3R_10() {
     if (jj_3R_11()) return true;
     if (jj_scan_token(COMP_OP)) return true;
+    return false;
+  }
+
+  static private boolean jj_3_3() {
+    if (jj_3R_9()) return true;
+    if (jj_scan_token(PERIOD)) return true;
     return false;
   }
 
@@ -772,11 +777,6 @@ public class sqlparser implements sqlparserConstants {
   static private boolean jj_3_1() {
     if (jj_3R_9()) return true;
     if (jj_scan_token(PERIOD)) return true;
-    return false;
-  }
-
-  static private boolean jj_3R_15() {
-    if (jj_scan_token(LEGAL_IDENTIFIER)) return true;
     return false;
   }
 

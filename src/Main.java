@@ -18,13 +18,13 @@ public class Main {
 	      }
 	      catch (ParseException e)
 	      {
-	    	System.out.println(e.getMessage());
-	    	//e.printStackTrace();
+	    //	System.out.println(e.getMessage());
+	   // 	e.printStackTrace();
 	        System.out.println("Syntax error");
 		    System.out.print("DB_2009-13389> ");
 	        parser.ReInit(System.in);
 	      }catch (Exception e){
-	    	  e.printStackTrace();
+	    	//  e.printStackTrace();
 	    	  System.out.println("Unhandled Exception");
 			  System.out.print("DB_2009-13389> ");
 	    	  parser.ReInit(System.in);

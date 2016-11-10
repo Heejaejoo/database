@@ -13,11 +13,11 @@ public class Table implements Serializable{
 	public int PKcount = 0;
 
 	private boolean checkColumnDuplicate(ArrayList<Column> cols){
-		Set<Column> set = new HashSet<Column>();
+		Set<String> set = new HashSet<String>();
 		for(int i=0; i<this.columns.size(); ++i){
-			set.add(cols.get(i));
+			set.add(cols.get(i).getName());
 		}
-		return cols.size() != set.size();
+		return cols.size() == set.size();
 	}
 	
 	public String getName(){
@@ -30,7 +30,7 @@ public class Table implements Serializable{
 		this.tableName = tn;
 		this.columns.addAll(cols);
 		// Column Duplicate check
-		if(checkColumnDuplicate(cols)){
+		if(!checkColumnDuplicate(cols)){
 			throw new MyException(Messages.DuplicateColumnDefError);
 		}
 		

@@ -114,7 +114,6 @@ void command() throws Exception, MyException:
     < EXIT >
     < SEMICOLON >
     {
-      
       System.exit(0);
     }
   ) 
@@ -394,7 +393,7 @@ String tableName() :
 {
   t = < LEGAL_IDENTIFIER >
   {
-    return t.toString();
+    return t.toString().toLowerCase();
   }
 }
 
@@ -405,7 +404,7 @@ String columnName() :
 {
   t = < LEGAL_IDENTIFIER >
   {
-	return t.toString();
+	return t.toString().toLowerCase();
   }
 }
 

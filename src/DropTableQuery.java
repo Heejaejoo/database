@@ -26,9 +26,9 @@ public class DropTableQuery extends Query{
 			}
 		}
 		if(dbman.delete(this.tableName) == 1 ){
-			System.out.println(String.format(Messages.DropSuccess, this.tableName));
-			
+			System.out.println(String.format(Messages.DropSuccess, this.tableName));	
 		}else{
+			//unhandled situation
 			throw new Exception();
 		}
 	}

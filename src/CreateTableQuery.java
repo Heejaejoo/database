@@ -83,7 +83,6 @@ public class CreateTableQuery extends Query{
 					boolean flag = false;
 					for(Column refcol: reference.getColumns()){
 						if(refcol.getName().equals(referingcolname)){
-							System.out.printf("this %s, that %s\n", referingcol, referingcolname);
 							flag = true;
 							//reference하는 column이 PK가 아닌경
 							if(!refcol.isPK()){
