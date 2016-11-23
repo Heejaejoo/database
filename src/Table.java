@@ -32,7 +32,7 @@ public class Table implements Serializable{
 	public ArrayList<ArrayList<Value>> getEntries(){
 		return this.getEntries();
 	}
-	
+
 	public Table(String tn, ArrayList<Column> cols, ArrayList<PrimaryKeyConstraint> pks) throws MyException, Exception{
 		this.tableName = tn;
 		this.columns.addAll(cols);

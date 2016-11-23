@@ -97,7 +97,8 @@ public class InsertQuery extends Query{
 			addNullToValueList(colList);
 		}
 		
-		//common validation
+		//common validation starts
+		
 		//size mismatch
 		if(valList.size() != colList.size()){
 			throw new MyException(Messages.InsertTypeMismatchError);
@@ -136,11 +137,40 @@ public class InsertQuery extends Query{
 		}	
 	}
 	
-	
 	//need to implement
-	private void primaryKeyValidate(ArrayList<ArrayList<Value>> rs){
-		for(ArrayList<Value> record: rs){
-			
+	private void primaryKeyValidate(Table t) throws MyException{
+		ArrayList<ArrayList<Value> > records = t.getEntries();
+		ArrayList<Column> clist = t.getColumns();
+		int siz = clist.size();
+		
+		//find primary key index
+		boolean[] arr = new boolean[siz];
+		Arrays.fill(arr, false);
+		int PKcount=0;
+		for(int i=0; i<siz; ++i){
+			if(clist.get(i).isPK()){
+				arr[i] = true;
+				PKcount++;
+			}
+		}
+		//defined when the table has primary key
+		//check if there is a record which has same primary key to current valuelist
+		if(PKcount>0){
+			int rlen = records.size();
+			for(int i=0; i<rlen; i++){
+				int flag = 0;
+				ArrayList<Value> record = records.get(i);
+				for(int j=0; i<record.size(); j++){
+					if(arr[j]){
+						if(record.get(j).equals(valList.get(j))){
+							flag++;
+						}
+					}
+				}
+				if(flag == PKcount){
+					throw new MyException(Messages.InsertDuplicatePrimaryKeyError);
+				}
+			}
 		}
 	}
 	
@@ -148,11 +178,9 @@ public class InsertQuery extends Query{
 		dbman = DBManager.dbman();
 		t = dbman.get(this.tableName, 2);
 		ArrayList<Column> clist = t.getColumns();
-		ArrayList<ArrayList<Value>> records = t.getEntries();
+		ArrayList<ArrayList<Value> > records = t.getEntries();
 		basicValidate(clist);
-		int siz = records.size();
-		
-		
+		primaryKeyValidate(t);
 		
 		
 		
