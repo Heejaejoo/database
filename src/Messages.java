@@ -17,12 +17,15 @@ public class Messages {
 	// my specific error
 	final static String PrimaryKeyNullError = "Primary key must not be null";
 	final static String RefNumberNotMatchError = "the number of referenced attributes must be same as the number of referencing attributes";
+	
+	//error messages for inserting
 	final static String InsertResult = "The row is inserted";
 	final static String InsertDuplicatePrimaryKeyError = "Insertion has failed: Primary key duplication";
 	final static String InsertReferentialIntegrityError = "Insertion has failed: Referential integrity violation";
 	final static String InsertTypeMismatchError = "Insertion has failed: Types are not matched";
+	
+	//column name needed
 	final static String InsertColumnExistenceError = "Insertion has failed: '%s' does not exist";
 	final static String InsertColumnNonNullableError = "Insertion has failed: '%s' is not nullable";
-
 
 }

@@ -113,7 +113,6 @@ public class DBManager implements Serializable{
 			//e.printStackTrace();
 		}
 		return success;
-		
 	}
 	
 	public ArrayList<Table> getAll(int num) throws Exception, MyException{

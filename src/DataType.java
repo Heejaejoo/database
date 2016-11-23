@@ -50,7 +50,4 @@ public class DataType implements Serializable{
 			return this.datatype == oth.datatype;
 		}
 	}
-	
-	
-	
 }

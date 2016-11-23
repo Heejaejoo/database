@@ -8,10 +8,13 @@ public class Table implements Serializable{
 	 * 
 	 */
 	private static final long serialVersionUID = -9172272818248838214L;
+	
 	private String tableName;
 	private ArrayList<Column> columns = new ArrayList<Column>();
 	public int PKcount = 0;
-
+	
+	private ArrayList<ArrayList<Value> > entries = new ArrayList<ArrayList<Value> >();
+	
 	private boolean checkColumnDuplicate(ArrayList<Column> cols){
 		Set<String> set = new HashSet<String>();
 		for(int i=0; i<this.columns.size(); ++i){
@@ -26,6 +29,10 @@ public class Table implements Serializable{
 	public ArrayList<Column> getColumns(){
 		return this.columns;
 	}
+	public ArrayList<ArrayList<Value>> getEntries(){
+		return this.getEntries();
+	}
+	
 	public Table(String tn, ArrayList<Column> cols, ArrayList<PrimaryKeyConstraint> pks) throws MyException, Exception{
 		this.tableName = tn;
 		this.columns.addAll(cols);
@@ -70,6 +77,10 @@ public class Table implements Serializable{
 		// handle no references			
 	}
 	
-
-	
+	//suppose 'good' input 
+	public void addEntries(ArrayList<Value> valist){
+		ArrayList<Value> vlist = new ArrayList<Value> ();
+		vlist.addAll(valist);
+		entries.add(vlist);
+	}
 }

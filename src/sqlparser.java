@@ -304,32 +304,48 @@ public class sqlparser implements sqlparserConstants {
   }
 
 // insert query consists of <INSERT_INTO > + tableName() + insertColumnsandSources()
-  static final public Query insertQuery() throws ParseException {
+  static final public InsertQuery insertQuery() throws ParseException, MyException {
+  String name;
+  InsertQuery query;
+  ArrayList<String > colNameList;
     jj_consume_token(INSERT_INTO);
-    tableName();
-    insertColumnsandSources();
-                {if (true) return null;}
+    name = tableName();
+    query = insertColumnsandSources(name);
+                {if (true) return query;}
     throw new Error("Missing return statement in function");
   }
 
 // insertColumnsandSources consists of [columnNameList()]? + valueList()
-  static final public void insertColumnsandSources() throws ParseException {
+  static final public InsertQuery insertColumnsandSources(String name) throws ParseException, MyException {
+        InsertQuery q;
+        ArrayList<String > c = new ArrayList<String > ();
+        ArrayList<Value > v;
     switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
     case LEFT_PAREN:
-      columnNameList();
+      c = columnNameList();
       break;
     default:
       jj_la1[9] = jj_gen;
       ;
     }
-    valueList();
+    v = valueList();
+          if(c.size() == 0) {
+            q = new InsertQuery(name, v);
+          }else {
+            q = new InsertQuery(name, c, v);
+          }
+          {if (true) return q;}
+    throw new Error("Missing return statement in function");
   }
 
 //valueList() consists of <VALUES > + ( + value + [< COMMA >, value()]? + )
-  static final public void valueList() throws ParseException {
+  static final public ArrayList<Value > valueList() throws ParseException {
+  ArrayList<Value > valList = new ArrayList<Value > ();
+  Value a;
     jj_consume_token(VALUES);
     jj_consume_token(LEFT_PAREN);
-    value();
+    a = value();
+          valList.add(a);
     label_4:
     while (true) {
       switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
@@ -341,46 +357,60 @@ public class sqlparser implements sqlparserConstants {
         break label_4;
       }
       jj_consume_token(COMMA);
-      value();
+      a = value();
+                valList.add(a);
     }
     jj_consume_token(RIGHT_PAREN);
+                {if (true) return valList;}
+    throw new Error("Missing return statement in function");
   }
 
 //define comparable value
-  static final public void comparableValue() throws ParseException {
+  static final public Value comparableValue() throws ParseException {
+  Token t;
+  Value a;
     switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
     case INT_VALUE:
-      jj_consume_token(INT_VALUE);
+      t = jj_consume_token(INT_VALUE);
+                    a = new Value(0, t.toString());
       break;
     case CHAR_STRING:
-      jj_consume_token(CHAR_STRING);
+      t = jj_consume_token(CHAR_STRING);
+                    a = new Value(1, t.toString());
       break;
     case DATE_VALUE:
-      jj_consume_token(DATE_VALUE);
+      t = jj_consume_token(DATE_VALUE);
+                    a = new Value(2, t.toString());
       break;
     default:
       jj_la1[11] = jj_gen;
       jj_consume_token(-1);
       throw new ParseException();
     }
+          {if (true) return a;}
+    throw new Error("Missing return statement in function");
   }
 
 //values are null or comparable value
-  static final public void value() throws ParseException {
+  static final public Value value() throws ParseException {
+  Value a;
     switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
     case NULL:
       jj_consume_token(NULL);
+                    a = new Value(3);
       break;
     case INT_VALUE:
     case CHAR_STRING:
     case DATE_VALUE:
-      comparableValue();
+      a = comparableValue();
       break;
     default:
       jj_la1[12] = jj_gen;
       jj_consume_token(-1);
       throw new ParseException();
     }
+          {if (true) return a;}
+    throw new Error("Missing return statement in function");
   }
 
 //select query consists of <SELECT > + selectList() + tableExpr()
@@ -730,6 +760,11 @@ public class sqlparser implements sqlparserConstants {
     return false;
   }
 
+  static private boolean jj_3R_18() {
+    if (jj_scan_token(DATE_VALUE)) return true;
+    return false;
+  }
+
   static private boolean jj_3R_10() {
     if (jj_3R_11()) return true;
     if (jj_scan_token(COMP_OP)) return true;
@@ -756,13 +791,18 @@ public class sqlparser implements sqlparserConstants {
   static private boolean jj_3R_14() {
     Token xsp;
     xsp = jj_scanpos;
-    if (jj_scan_token(50)) {
+    if (jj_3R_16()) {
     jj_scanpos = xsp;
-    if (jj_scan_token(52)) {
+    if (jj_3R_17()) {
     jj_scanpos = xsp;
-    if (jj_scan_token(53)) return true;
+    if (jj_3R_18()) return true;
     }
     }
+    return false;
+  }
+
+  static private boolean jj_3R_17() {
+    if (jj_scan_token(CHAR_STRING)) return true;
     return false;
   }
 
@@ -774,6 +814,11 @@ public class sqlparser implements sqlparserConstants {
   static private boolean jj_3_1() {
     if (jj_3R_9()) return true;
     if (jj_scan_token(PERIOD)) return true;
+    return false;
+  }
+
+  static private boolean jj_3R_16() {
+    if (jj_scan_token(INT_VALUE)) return true;
     return false;
   }
 

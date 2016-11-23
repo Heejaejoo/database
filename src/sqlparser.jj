@@ -411,57 +411,119 @@ String columnName() :
 }
 
 // insert query consists of <INSERT_INTO > + tableName() + insertColumnsandSources()
-Query insertQuery() :
-{}
+InsertQuery insertQuery() throws MyException :
+{
+  String name;
+  InsertQuery query;
+  ArrayList<String > colNameList;
+ }
 {
 	< INSERT_INTO >
-	tableName()
-	insertColumnsandSources()
+	name = tableName()
+	query = insertColumnsandSources(name)
 	{
-		return null;
+		return query;
 	}
 
 }
 
 // insertColumnsandSources consists of [columnNameList()]? + valueList()
-void insertColumnsandSources() :
-{}
+InsertQuery insertColumnsandSources(String name) throws MyException :
+{
+ 	InsertQuery q;
+	ArrayList<String > c = new ArrayList<String > ();
+	ArrayList<Value > v;	
+}
 {
 	(
-	  columnNameList()
+	  c = columnNameList()
 	)?
-	valueList()
+	v = valueList()
+	{
+	  if(c.size() == 0) {
+	    q = new InsertQuery(name, v);
+	  }else {
+	    q = new InsertQuery(name, c, v);
+	  }
+	  return q;
+	}
 }
 
 //valueList() consists of <VALUES > + ( + value + [< COMMA >, value()]? + )
-void valueList():
-{}
+ArrayList<Value > valueList():
+{
+  ArrayList<Value > valList = new ArrayList<Value > ();
+  Value a;
+}
 {
 	< VALUES >
 	< LEFT_PAREN >
-	value()
+	a = value()
+	{
+	  valList.add(a);
+	}
 	(
 	  < COMMA >
-	  value()
+	  a = value()
+	  { 
+	  	valList.add(a);
+	  }
 	)*
 	< RIGHT_PAREN >
+	{
+		return valList;
+	}
 }
 
 //define comparable value
-void comparableValue():
-{}
+Value comparableValue():
 {
-  	<INT_VALUE >
-	| < CHAR_STRING >
-	| < DATE_VALUE >
+  Token t;
+  Value a;
+}
+{
+  (
+	  	(	  	  t = <INT_VALUE >
+	  	  {
+	  	    a = new Value(0, t.toString());
+	  	  }
+	  	)
+		|
+		(		  t = < CHAR_STRING >
+		  {
+		    a = new Value(1, t.toString());
+		  }
+		)
+		|
+		(		  t = < DATE_VALUE >
+		  {
+		    a = new Value(2, t.toString());
+		  }
+		)
+	)
+	{
+	  return a;
+	}
 }
 
 //values are null or comparable value
-void value():
-{}
+Value value():
 {
-	<NULL>
-	| comparableValue() 	
+  Value a;
+}
+{
+	(	  (	  <NULL>
+		  {
+		    a = new Value(3);
+		  }
+	   )
+		|
+		(		  a = comparableValue()
+		)
+	)
+	{
+	  return a;
+	}
 }
 
 //select query consists of <SELECT > + selectList() + tableExpr()
