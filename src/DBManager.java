@@ -25,14 +25,17 @@ public class DBManager implements Serializable{
 	Database myDatabase = null;
 	Database myClassDb = null;
 	Cursor cursor = null;
-	EnvironmentConfig envConfig = new EnvironmentConfig();
-	DatabaseConfig dbConfig =  new DatabaseConfig();
+	EnvironmentConfig envConfig;
+	DatabaseConfig dbConfig;
 	DatabaseEntry key;
 	DatabaseEntry data;
 	EntryBinding<Table> dataBinding;
 	StoredClassCatalog classCatalog;
 	
+	private static DBManager instance;
 	private DBManager(){
+		this.envConfig = new EnvironmentConfig();
+		this.dbConfig =  new DatabaseConfig();
 		this.envConfig.setAllowCreate(true);
 		this.dbConfig.setAllowCreate(true);
 		this.dbConfig.setSortedDuplicates(true);
@@ -42,16 +45,19 @@ public class DBManager implements Serializable{
 		this.myClassDb = myDbEnvironment.openDatabase(null, "classDb", this.dbConfig);
 		this.classCatalog = new StoredClassCatalog(myClassDb);
 		this.dataBinding = new SerialBinding<Table>(classCatalog, Table.class);
+		this.cursor = this.myDatabase.openCursor(null, null);
+
 	}
 	
-	//can only access through this func
-	static DBManager dbman() {
-	    return new DBManager();
+	//use singleton pattern;
+	public static DBManager dbman() {
+	    if(instance == null)
+	    	instance = new DBManager();
+	    return instance;
 	 }
 	
 	public void put(Table tb) throws MyException{
 		try{
-			cursor = this.myDatabase.openCursor(null, null);
 			key = new DatabaseEntry(tb.getName().getBytes("UTF-8"));
 			data = new DatabaseEntry();
 		    dataBinding.objectToEntry(tb, data);
@@ -66,16 +72,12 @@ public class DBManager implements Serializable{
 			
 		}catch (UnsupportedEncodingException e){
 			e.printStackTrace();
-		}finally {
-			cursor.close();
-			close();
 		}
 	}
 	
 	public Table get(String tableName, int num) throws Exception{
 		Table retrievedData = null;
 		try{
-			cursor = this.myDatabase.openCursor(null, null);
 			key = new DatabaseEntry(tableName.getBytes("UTF-8"));
 			data = new DatabaseEntry();
 			if (cursor.getSearchKey(key, data, LockMode.DEFAULT) == OperationStatus.SUCCESS){
@@ -90,20 +92,13 @@ public class DBManager implements Serializable{
 			
 		}catch (UnsupportedEncodingException e){
 			//e.printStackTrace();
-		}finally{
-			cursor.close();
-			if(num != -1){
-				close();	
-			}
 		}
-		
 		return retrievedData;
 	}
 	
 	public int delete(String tableName) throws Exception{
 		int success = 0;
 		try{
-			cursor = this.myDatabase.openCursor(null, null);
 			key = new DatabaseEntry(tableName.getBytes("UTF-8"));
 			data = new DatabaseEntry();
 			if (cursor.getSearchKey(key, data, LockMode.DEFAULT) == OperationStatus.SUCCESS){
@@ -116,9 +111,6 @@ public class DBManager implements Serializable{
 			
 		}catch (UnsupportedEncodingException e){
 			//e.printStackTrace();
-		}finally{
-			cursor.close();
-			close();
 		}
 		return success;
 		
@@ -127,7 +119,6 @@ public class DBManager implements Serializable{
 	public ArrayList<Table> getAll(int num) throws Exception, MyException{
 		ArrayList<Table> res = new ArrayList<Table>();
 		try{
-			cursor = this.myDatabase.openCursor(null, null);
 			key = new DatabaseEntry();
 			data = new DatabaseEntry();
 			if(cursor.getFirst(key, data, LockMode.DEFAULT) != OperationStatus.SUCCESS){
@@ -138,15 +129,14 @@ public class DBManager implements Serializable{
 				res.add(retrievedData);
 			}while(cursor.getNext(key, data, LockMode.DEFAULT) == OperationStatus.SUCCESS);
 		}catch (DatabaseException de){
-		}finally{
-			cursor.close();
-			if(num != -1)
-				close();
 		}
 		return res;
 	}
 	
 	public void close(){
+		if(this.cursor != null){
+			this.cursor.close();
+		}
 		if(this.myDatabase != null){
 			this.myDatabase.close();
 			this.myClassDb.close();

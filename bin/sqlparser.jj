@@ -114,6 +114,8 @@ void command() throws Exception, MyException:
     < EXIT >
     < SEMICOLON >
     {
+		DBManager dbman = DBManager.dbman();
+		dbman.close();
       System.exit(0);
     }
   ) 

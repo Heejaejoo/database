@@ -32,6 +32,8 @@ public class sqlparser implements sqlparserConstants {
     case EXIT:
       jj_consume_token(EXIT);
       jj_consume_token(SEMICOLON);
+                DBManager dbman = DBManager.dbman();
+                dbman.close();
       System.exit(0);
       break;
     default:
@@ -705,11 +707,6 @@ public class sqlparser implements sqlparserConstants {
     finally { jj_save(3, xla); }
   }
 
-  static private boolean jj_3R_15() {
-    if (jj_scan_token(LEGAL_IDENTIFIER)) return true;
-    return false;
-  }
-
   static private boolean jj_3R_13() {
     Token xsp;
     xsp = jj_scanpos;
@@ -777,6 +774,11 @@ public class sqlparser implements sqlparserConstants {
   static private boolean jj_3_1() {
     if (jj_3R_9()) return true;
     if (jj_scan_token(PERIOD)) return true;
+    return false;
+  }
+
+  static private boolean jj_3R_15() {
+    if (jj_scan_token(LEGAL_IDENTIFIER)) return true;
     return false;
   }
 
