@@ -15,10 +15,12 @@ public class DropTableQuery extends Query{
 				continue;
 			}
 			for (Column col: tb.getColumns()){
-				if (col.getReftb() != null){
-					String name = col.getReftb();
-					if(name.equals(this.tableName)){
-						throw new MyException(String.format(Messages.DropReferencedTableError, this.tableName));
+				if (col.getReftb().size()>0){
+					for(int i=0; i<col.getReftb().size(); ++i){
+						String name = col.getReftb().get(i);
+						if(name.equals(this.tableName)){
+							throw new MyException(String.format(Messages.DropReferencedTableError, this.tableName));
+						}
 					}
 				}
 			}

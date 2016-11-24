@@ -11,8 +11,8 @@ public class Column implements Serializable{
 	private boolean notNull;
 	private boolean PK = false;
 	private boolean FK = false;
-	String referingTable= null;
-	String referingColumn= null;
+	private ArrayList<String> referingTable = new ArrayList<String> ();
+	private ArrayList<String> referingColumn = new ArrayList<String> ();
 	
 	public String getName(){
 		return this.columnName;
@@ -55,18 +55,18 @@ public class Column implements Serializable{
 	}
 	
 	public void setReftb(String tbname){
-		this.referingTable = tbname;
+		this.referingTable.add(tbname);
 	}
 	
 	public void setRefcol(String colname){
-		this.referingColumn = colname;
+		this.referingColumn.add(colname);
 	}
 	
-	public String getReftb(){
+	public ArrayList<String> getReftb(){
 		return this.referingTable;
 	}
 	
-	public String getRefcol(){
+	public ArrayList<String> getRefcol(){
 		return this.referingColumn;
 	}
 	
