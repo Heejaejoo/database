@@ -376,11 +376,12 @@ public class sqlparser implements sqlparserConstants {
       break;
     case CHAR_STRING:
       t = jj_consume_token(CHAR_STRING);
-                    a = new Value(1, t.toString());
+                    String s= t.toString();
+                    a = new Value(1, s.substring(1, s.length()-1));
       break;
     case DATE_VALUE:
       t = jj_consume_token(DATE_VALUE);
-                    a = new Value(2, t.toString());
+                    a = new Value(2,t.toString());
       break;
     default:
       jj_la1[11] = jj_gen;
@@ -737,14 +738,6 @@ public class sqlparser implements sqlparserConstants {
     finally { jj_save(3, xla); }
   }
 
-  static private boolean jj_3R_13() {
-    Token xsp;
-    xsp = jj_scanpos;
-    if (jj_3_3()) jj_scanpos = xsp;
-    if (jj_3R_15()) return true;
-    return false;
-  }
-
   static private boolean jj_3R_11() {
     Token xsp;
     xsp = jj_scanpos;
@@ -806,14 +799,14 @@ public class sqlparser implements sqlparserConstants {
     return false;
   }
 
-  static private boolean jj_3_2() {
-    if (jj_3R_10()) return true;
-    return false;
-  }
-
   static private boolean jj_3_1() {
     if (jj_3R_9()) return true;
     if (jj_scan_token(PERIOD)) return true;
+    return false;
+  }
+
+  static private boolean jj_3_2() {
+    if (jj_3R_10()) return true;
     return false;
   }
 
@@ -824,6 +817,14 @@ public class sqlparser implements sqlparserConstants {
 
   static private boolean jj_3R_15() {
     if (jj_scan_token(LEGAL_IDENTIFIER)) return true;
+    return false;
+  }
+
+  static private boolean jj_3R_13() {
+    Token xsp;
+    xsp = jj_scanpos;
+    if (jj_3_3()) jj_scanpos = xsp;
+    if (jj_3R_15()) return true;
     return false;
   }
 

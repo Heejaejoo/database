@@ -1,4 +1,5 @@
 import java.io.Serializable;
+import java.util.ArrayList;
 
 /** 
  * Value consists of type and String
@@ -21,6 +22,9 @@ public class Value implements Serializable{
 	private static final long serialVersionUID = -2166613117753781859L;
 	private int type;
 	private String val;
+	//needs upgrade
+	private ArrayList<Value> referencing = new ArrayList<Value>();
+	private int referenced = 0;
 	
 	public Value(int dt, String value){
 		this.type = dt;
@@ -29,6 +33,17 @@ public class Value implements Serializable{
 	//if null
 	public Value(int dt){
 		this.type = dt;
+	}
+	
+	public void setReferencing(Value e){
+		this.referencing.add(e);
+	}
+	
+	public void addReferencedByOne(){
+		this.referenced++;
+	}
+	public void deReferenceByOne(){
+		this.referenced--;
 	}
 	
 	public boolean isInt(){
@@ -59,5 +74,25 @@ public class Value implements Serializable{
 	public int getIntVal(){
 		return Integer.parseInt(this.val);
 	}
+	
+	public boolean equals(Value oth){
+		if(this.isNull() || oth.isNull()){
+			return false;
+		}
+		else{
+			if(this.getType() != oth.getType()){
+				return false;
+			}
+			return this.val.equals(oth.getVal());
+		}
+	}
+	
+	public String toString(){
+		if(this.isNull()){
+			return "null";
+		}
+		return this.val;
+	}
+	
 	
 }

@@ -2,6 +2,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.HashMap;
 
 public class InsertQuery extends Query{
 	DBManager dbman;
@@ -47,15 +48,19 @@ public class InsertQuery extends Query{
 		for(int i=0; i<siz; ++i){
 			n = colNameList.get(i);
 			for(int j=0; j<siz2; ++j){
-				c = colList.get(i);
+				c = colList.get(j);
 				if(c.getName().equals(n)){
 					selectarr[j] = i;
+					break;
 				}
 			}
 		}
 		Value v;
 		ArrayList<Value> res = new ArrayList<Value>();
+		ArrayList<String> name = new ArrayList<String> ();
 		for(int i=0; i<siz2; ++i){
+			String colname = colList.get(i).getName();
+			name.add(colname);
 			if(selectarr[i] != -1){
 				int index = selectarr[i];
 				v = valList.get(index); 
@@ -68,6 +73,8 @@ public class InsertQuery extends Query{
 		//ready for filling nulls to valuelist
 		this.valList.clear();
 		this.valList.addAll(res);
+		this.colNameList.clear();
+		this.colNameList.addAll(name);
 	}
 	
 	//handle validation except primary key
@@ -111,7 +118,7 @@ public class InsertQuery extends Query{
 			//value - column comparison
 			v = valList.get(i);
 			c = colList.get(i);
-			if(v.getType() == 3){
+			if(v.isNull()){
 				if(c.isNotNull()){
 					//when insert null value to column which has not null constraint
 						throw new MyException(String.format(Messages.InsertColumnNonNullableError, c.getName()));
@@ -139,19 +146,24 @@ public class InsertQuery extends Query{
 	
 	//need to implement
 	private void primaryKeyValidate(Table t) throws MyException{
+//		for(int i=0; i<this.valList.size(); i++){
+//			System.out.println(this.valList.get(i).toString());
+//		}
 		ArrayList<ArrayList<Value> > records = t.getEntries();
 		ArrayList<Column> clist = t.getColumns();
 		int siz = clist.size();
 		
 		//find primary key index
-		boolean[] arr = new boolean[siz];
-		Arrays.fill(arr, false);
+//		System.out.println("size");
+//		System.out.println(Integer.toString(siz));
+		ArrayList<Boolean> arr = new ArrayList<Boolean>();
 		int PKcount=0;
 		for(int i=0; i<siz; ++i){
 			if(clist.get(i).isPK()){
-				arr[i] = true;
+				arr.add(new Boolean(true));
 				PKcount++;
-			}
+			}else
+			arr.add(new Boolean(false));
 		}
 		//defined when the table has primary key
 		//check if there is a record which has same primary key to current valuelist
@@ -160,8 +172,8 @@ public class InsertQuery extends Query{
 			for(int i=0; i<rlen; i++){
 				int flag = 0;
 				ArrayList<Value> record = records.get(i);
-				for(int j=0; i<record.size(); j++){
-					if(arr[j]){
+				for(int j=0; j<record.size(); j++){
+					if(arr.get(j).booleanValue()){
 						if(record.get(j).equals(valList.get(j))){
 							flag++;
 						}
@@ -174,15 +186,154 @@ public class InsertQuery extends Query{
 		}
 	}
 	
+	/**	
+	 * 	called before all the validation has done, so this method is for 'good' inputs
+	 * having passed primary key, basic validation
+	 *  
+	 */
+	private boolean referentialIntegrityValidateAndUpdate(Table cur) throws Exception, MyException{
+		boolean hasForeignkey = false;
+		//foreignkey로 지정된 칼럼들에 대해, reference하고있는 테이블과 column들의 name들을 담고있는 map
+		//foreignkeyidxmap은 현재 칼럼의 idx
+		HashMap<String, ArrayList<String>> foreignKeyMap = new HashMap<String, ArrayList<String>>();
+		HashMap<String, ArrayList<Integer>> foreignKeyIdxMap = new HashMap<String, ArrayList<Integer>>();
+		//check null and if has, use it as a wildcard
+		HashMap<String, Boolean> hasNull = new HashMap<String, Boolean>();
+		//schema of this table
+		ArrayList<Column> clist = cur.getColumns();
+		
+		int siz = clist.size();
+		Column c;
+		
+		//check if this table's schema has foreignkey 
+		//if has, mapping referenced table name and idx to foreignkeymap
+		for(int i=0; i<siz; ++i){
+			c = clist.get(i);
+			//check it is FK
+			if(c.isFK()){
+				hasForeignkey = true;
+				ArrayList<String> tbNameList = c.getReftb();
+				ArrayList<String> refColNameList = c.getRefcol();
+				//이 칼럼의 referencing list
+				
+				//c의 ref list를 순회하면서 map에 push
+				int refsize = tbNameList.size();
+				for(int idx=0; idx<refsize; ++idx){
+					//1st table, table num
+					String tbn = tbNameList.get(idx);
+					String coln = refColNameList.get(idx);
+					if(foreignKeyMap.containsKey(tbn)){
+						foreignKeyMap.get(tbn).add(coln);
+						foreignKeyIdxMap.get(tbn).add(new Integer(i));
+						if(this.valList.get(i).getType() == 3){
+							//null value, OK!
+							hasNull.replace(tbn, true);
+						}
+					}else{
+						ArrayList<String> a = new ArrayList<String>();
+						ArrayList<Integer> b = new ArrayList<Integer>();
+						a.add(coln);
+						b.add(new Integer(i));
+						foreignKeyMap.put(tbn, a);
+						foreignKeyIdxMap.put(tbn, b);
+						if(this.valList.get(i).getType() == 3){
+							//null value, OK!
+							hasNull.put(tbn, true);
+						}else{
+							hasNull.put(tbn, false);
+						}
+					}
+				}
+			}
+		}
+		
+		if(hasForeignkey){
+			dbman = DBManager.dbman();
+			Set<String> keyset = foreignKeyMap.keySet();
+			ArrayList<Table> updatedTblist  = new ArrayList<Table>();
+			Table t;
+			//validate it has foreignkey
+			for(String tbname: keyset){
+				t = dbman.get(tbname, 2);
+				if(!hasNull.get(tbname)){
+					ArrayList<String> fknamelist = foreignKeyMap.get(tbname);
+					ArrayList<Integer> thisidxlist = foreignKeyIdxMap.get(tbname);
+					ArrayList<Integer> thatidxlist = new ArrayList<Integer>();
+					ArrayList<Column> thatColList = t.getColumns();
+					//construct idx list of this, that
+					int s = thatColList.size();
+					for(int j=0; j<fknamelist.size(); ++j){
+						for(int i=0; i<s; i++){
+							if(thatColList.get(i).getName().equals(fknamelist.get(j))){
+								thatidxlist.add(new Integer(i));
+								break;
+							}
+						}
+					}
+					
+					if(thisidxlist.size() != thatidxlist.size()){
+						System.out.println("something wrong on idx");
+						throw new Exception();
+					}
+					
+					ArrayList<ArrayList<Value>> records = t.getEntries();
+					boolean flag = false;
+					//일치하는 record가 있는지 확인
+					for(ArrayList<Value> record: records){
+						int cnt = 0;
+						int sizz = thisidxlist.size();
+						for(int id = 0; id<sizz; ++id){
+							Value thisvalue = this.valList.get(thisidxlist.get(id));
+							Value thatvalue = record.get(thatidxlist.get(id));
+							if(thisvalue.equals(thatvalue)){
+								cnt++;
+							}
+						}
+						//find the one!
+						if(cnt == sizz){
+							flag = true;
+							for(int id = 0; id<sizz; ++id){
+								Value thisvalue = this.valList.get(thisidxlist.get(id));
+								Value thatvalue = record.get(thatidxlist.get(id));
+							//delete시 주의할 것 
+								thatvalue.addReferencedByOne();
+								thisvalue.setReferencing(thatvalue);
+							}
+							break;
+						}
+					}
+					//일치하는 
+					if(!flag){
+						throw new MyException(Messages.InsertReferentialIntegrityError);
+					}
+					updatedTblist.add(t);
+					//update that one
+				}
+			}
+			//pass validation
+			//congraturation
+			for(Table tble: updatedTblist){
+				String nm = tble.getName();
+				dbman.delete(nm);
+				dbman.put(tble);
+			}
+		}
+		return true;
+	}
+	
 	public void execute() throws Exception, MyException{
 		dbman = DBManager.dbman();
 		t = dbman.get(this.tableName, 2);
 		ArrayList<Column> clist = t.getColumns();
-		ArrayList<ArrayList<Value> > records = t.getEntries();
 		basicValidate(clist);
 		primaryKeyValidate(t);
-		
-		
-		
+		if(referentialIntegrityValidateAndUpdate(t)){
+			t.getEntries().add(this.valList);
+			dbman.delete(t.getName());
+			dbman.put(t);
+			System.out.println(Messages.InsertResult);
+			Table r = dbman.get(t.getName(), 2);
+			r.prettyPrint();
+		};
 	}
 }

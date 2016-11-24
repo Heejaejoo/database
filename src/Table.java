@@ -30,7 +30,7 @@ public class Table implements Serializable{
 		return this.columns;
 	}
 	public ArrayList<ArrayList<Value>> getEntries(){
-		return this.getEntries();
+		return this.entries;
 	}
 
 	public Table(String tn, ArrayList<Column> cols, ArrayList<PrimaryKeyConstraint> pks) throws MyException, Exception{
@@ -83,4 +83,45 @@ public class Table implements Serializable{
 		vlist.addAll(valist);
 		entries.add(vlist);
 	}
+	
+	public void prettyPrint(){
+		Table table = this;
+		System.out.println("-------------------------------------------------");
+	    System.out.printf("table_name [%s]\n", table.getName());
+    	System.out.format("%32s%10s%16s%16s\n", "column_name", "type", "null", "key");
+	    for(Column col : table.getColumns()){
+	    	String s = "";
+	    	if(col.isPK()){
+	    		s = "PRI";
+	    		if(col.isFK()){
+		    		s += "/FOR";
+		    	}
+	    	}else{
+	    		if(col.isFK()){
+	    			s = "FOR";
+	    		}
+	    	}
+	    	System.out.format("%32s%10s%16s%16s\n", col.getName(), col.getType().getString(), col.isNotNull()? "N": "Y", s);
+	    }
+	    
+	    System.out.println("values:");
+	    for(ArrayList<Value> val:this.entries){
+	    	String s = "";
+	    	for(Value v: val){
+	    		s = s.concat(v.toString()).concat(" ");
+	    	}
+	    	System.out.println(s);
+	    }
+	    System.out.println("-------------------------------------------------");
+	}
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
 }
