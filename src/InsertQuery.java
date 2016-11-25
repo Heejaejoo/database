@@ -152,7 +152,6 @@ public class InsertQuery extends Query{
 		ArrayList<ArrayList<Value> > records = t.getEntries();
 		ArrayList<Column> clist = t.getColumns();
 		int siz = clist.size();
-		
 		//find primary key index
 //		System.out.println("size");
 //		System.out.println(Integer.toString(siz));
@@ -296,8 +295,8 @@ public class InsertQuery extends Query{
 								Value thisvalue = this.valList.get(thisidxlist.get(id));
 								Value thatvalue = record.get(thatidxlist.get(id));
 							//delete시 주의할 것 
-								thatvalue.addReferencedByOne();
-								thisvalue.setReferencing(thatvalue);
+								thatvalue.setReferenced(cur.getName(), thisvalue);
+								thisvalue.setReferencing(t.getName(), thatvalue);
 							}
 							break;
 						}

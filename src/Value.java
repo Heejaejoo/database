@@ -24,7 +24,9 @@ public class Value implements Serializable{
 	private String val;
 	//needs upgrade
 	private ArrayList<Value> referencing = new ArrayList<Value>();
-	private int referenced = 0;
+	private ArrayList<String> referingTable = new ArrayList<String>();
+	private ArrayList<Value> referenced = new ArrayList<Value>();
+	private ArrayList<String> referedTable = new ArrayList<String>();
 	
 	public Value(int dt, String value){
 		this.type = dt;
@@ -35,15 +37,14 @@ public class Value implements Serializable{
 		this.type = dt;
 	}
 	
-	public void setReferencing(Value e){
+	public void setReferencing(String tbname, Value e){
 		this.referencing.add(e);
+		this.referingTable.add(tbname);
 	}
 	
-	public void addReferencedByOne(){
-		this.referenced++;
-	}
-	public void deReferenceByOne(){
-		this.referenced--;
+	public void setReferenced(String tbname, Value e){
+		this.referenced.add(e);
+		this.referedTable.add(tbname);
 	}
 	
 	public boolean isInt(){

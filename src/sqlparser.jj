@@ -611,124 +611,263 @@ void referedTable():
 }
 
 // whereclause consists of <WHERE > + boolValueexpr
-void whereClause():
-{}
+BooleanValueExpr whereClause():
+{
+  BooleanValueExpr e;
+ }
 {
 	< WHERE >
-	booleanValueExpr()
+	e =booleanValueExpr()
+	{
+		return e;
+	}
 }
 
 //boolValueexpr = booleanTerm | booleanTerm <OR > booleanValueExpr
 //Same as boolValueExpr = booleanTerm + (< OR > booleanTerm)*
 //disassembling recursive term 
-void booleanValueExpr():
-{}
+BooleanValueExpr booleanValueExpr():
 {
-	booleanTerm()
+  BooleanValueExpr e = new BooleanValueExpr();
+  BooleanTerm t;
+}
+{
+	t = booleanTerm()
+	{
+		e.addToList(t);
+	}
 	(
 	  < OR >
-	  booleanTerm()
+	  t = booleanTerm()
+	{
+		e.addToList(t);
+	}
 	)*
+	{
+		return e;
+	}
 }
 
 //booleanTerm = booleanfactor | booleanfactor <AND > booleanterm
 //Same as booleanTerm = booleanfactor + (<AND> booleanfactor)*
 //disassembling recursive term 
-void booleanTerm():
-{}
+BooleanTerm booleanTerm():
 {
-	booleanFactor()
+  BooleanTerm term = new BooleanTerm() { };
+  BooleanFactor f;
+ }
+{
+	f = booleanFactor()
+	{
+		term.addToList(f);
+	}
 	(
 	  < AND >
-	  booleanFactor()
-	)*	 
+	  	f = booleanFactor()
+		{
+			term.addToList(f);
+		}
+	)*
+	{
+		return term;
+	} 
 }
 
 //booleanfactor = (< NOT >)? + booleanTest;
-void booleanFactor():
-{}
+BooleanFactor booleanFactor():
+{
+  BooleanTest t;
+  BooleanFactor f;
+  boolean not = false;
+}
 {
 	(
-	  < NOT >
+	   < NOT >
+	   {
+	     not = true;
+	   }
 	)?
-	booleanTest()
+	t = booleanTest()
+	{
+	  f = new BooleanFactor(t);
+	  if(not)
+		f.setnot();
+	  return f;
+	}
 }
 
 // booleantest = predicate | parenthesizedBoolexpr
-void booleanTest():
-{}
+BooleanTest booleanTest():
 {
-	predicate()
+ 	Predicate p; 
+}
+{
+	p = predicate()
+	{
+		return new BooleanTest(p);
+	}
 	| parenthesizedBoolExpr() 
 }
 
 // parenthesizedBoolexpr = ( + booleanvalueExpr + )
-void parenthesizedBoolExpr():
-{}
+BooleanValueExpr parenthesizedBoolExpr():
+{
+  BooleanValueExpr e;
+}
 {
 	< LEFT_PAREN >
-	booleanValueExpr()
+	e = booleanValueExpr()
 	< RIGHT_PAREN >
+	{
+	  return e;
+	}
 }
 
 // use lookahead to prevent TOKEN ambiguity
 // predicate = comparison Predicate | null Predicate
-void predicate() :
-{}
+Predicate predicate() :
 {
-  	LOOKAHEAD(2)
-	comparisonPredicate()
-	| nullPredicate()
+  ComparisonPredicate c;
+  NullPredicate n;
+  Predicate p;
+}
+{
+	 (	    
+	  	LOOKAHEAD(2)
+	  	(
+			c = comparisonPredicate()
+			{
+				p = new Predicate(c);
+			}
+		)
+		| (
+		  n = nullPredicate()
+		  {
+				p = new Predicate(n);
+		  }
+		)
+	)
+	{
+		return p;
+	}
 }
 
 // comparison Predicate = comparion Operand + < COMP_OP > + comparison Operand
-void comparisonPredicate():
-{}
+ComparisonPredicate comparisonPredicate():
 {
-	compOperand()
-	< COMP_OP >
-	compOperand()
+  CompOperand a;
+  CompOperand b;
+  Token t;
+  String op;
+}
+{
+	a = compOperand()
+	t = < COMP_OP >
+	{
+		op = t.toString();	
+	}
+	b = compOperand()
+	{
+		return new ComparisonPredicate(a, b, op);
+	}
 }
 
 // comparison Operand is comparable value | ( (tableName() + < PERIOD >)? columnName)
 // use lookahead for same reason to above
-void compOperand():
-{}
+CompOperand compOperand():
 {
-  comparableValue()
-| (
-		(
-		  LOOKAHEAD(2)
-		  tableName()
-		  < PERIOD >
-	 	)?
-	 	columnName()
-  )
+  String tn="";
+  String cn;
+  CompOperand c;
+  Value v = null;
+  ColAlias a = null;
+  boolean isdotted = false;
+ }
+{
+	  (	    
+	  (
+	 	 v = comparableValue()
+		{
+		  c = new CompOperand(v);
+		}
+	 )
+	| (
+			(
+			  LOOKAHEAD(2)
+			  tn = tableName()
+			  < PERIOD >
+			  {
+			    isdotted = true;
+			  }
+		 	)?
+		 	cn = columnName()
+		 	{
+		 	  if(isdotted) {
+		 	  	a = new ColAlias(tn, cn);
+		 	 }else {
+				a = new ColAlias(cn);
+		 	 }
+		 	 c = new CompOperand(a); 
+		 	}
+	  )
+	)
+	{
+	  
+	return c;
+}
 }
 
 // null predicate = ( tableName()< PERIOD >)? + columnName() + nullOperation()
-void nullPredicate():
-{}
+NullPredicate nullPredicate():
+{
+  String tn = "";
+  String cn;
+  boolean dotted=false;
+  boolean t;
+  NullPredicate n;
+  ColAlias ca;
+}
 {
   (
     LOOKAHEAD(2)
-	tableName()
+	tn = tableName()
 	< PERIOD >
+	{
+	  dotted = true;
+	}
   )?
-  columnName()
-  nullOperation()
+  cn = columnName() 
+  t = nullOperation()
+  {
+    if(dotted) {
+		ca = new ColAlias(tn, cn);
+    }else {
+		ca = new ColAlias(cn);
+    }
+ 	return new NullPredicate(t, ca);   
+  }
 }
 
 // null operation consists of <IS > + (< NOT >)? + < NULL >
-void nullOperation():
-{}
+boolean nullOperation():
+{
+  boolean t =true;
+}
 {
 	< IS >
 	(
 	  < NOT >
+	  {
+	    t = false;
+	  }
 	)?
 	< NULL >
+	{
+		return t;
+	}
 }
+
+
 
 // deletequery = < DELETE_FROM > + tableName() + whereclause(optional)
 Query deleteQuery() :

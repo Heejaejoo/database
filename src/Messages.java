@@ -27,5 +27,13 @@ public class Messages {
 	//column name needed
 	final static String InsertColumnExistenceError = "Insertion has failed: '%s' does not exist";
 	final static String InsertColumnNonNullableError = "Insertion has failed: '%s' is not nullable";
+	
+	//Where clause
+	final static String WhereIncomparableError = "Where clause try to compare incomparable values";
+	final static String WhereTableNotSpecified = "Where clause try to reference tables which are not specified";
+	final static String WhereColumnNotExist = "Where clause try to reference non existing column";
+	final static String WhereAmbiguousReference = "Where clause contains ambiguous reference";
+	
+	
 
 }

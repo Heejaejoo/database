@@ -525,16 +525,22 @@ public class sqlparser implements sqlparserConstants {
   }
 
 // whereclause consists of <WHERE > + boolValueexpr
-  static final public void whereClause() throws ParseException {
+  static final public BooleanValueExpr whereClause() throws ParseException {
+  BooleanValueExpr e;
     jj_consume_token(WHERE);
-    booleanValueExpr();
+    e = booleanValueExpr();
+                {if (true) return e;}
+    throw new Error("Missing return statement in function");
   }
 
 //boolValueexpr = booleanTerm | booleanTerm <OR > booleanValueExpr
 //Same as boolValueExpr = booleanTerm + (< OR > booleanTerm)*
 //disassembling recursive term 
-  static final public void booleanValueExpr() throws ParseException {
-    booleanTerm();
+  static final public BooleanValueExpr booleanValueExpr() throws ParseException {
+  BooleanValueExpr e = new BooleanValueExpr();
+  BooleanTerm t;
+    t = booleanTerm();
+                e.addToList(t);
     label_7:
     while (true) {
       switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
@@ -546,15 +552,21 @@ public class sqlparser implements sqlparserConstants {
         break label_7;
       }
       jj_consume_token(OR);
-      booleanTerm();
+      t = booleanTerm();
+                e.addToList(t);
     }
+                {if (true) return e;}
+    throw new Error("Missing return statement in function");
   }
 
 //booleanTerm = booleanfactor | booleanfactor <AND > booleanterm
 //Same as booleanTerm = booleanfactor + (<AND> booleanfactor)*
 //disassembling recursive term 
-  static final public void booleanTerm() throws ParseException {
-    booleanFactor();
+  static final public BooleanTerm booleanTerm() throws ParseException {
+  BooleanTerm term = new BooleanTerm() { };
+  BooleanFactor f;
+    f = booleanFactor();
+                term.addToList(f);
     label_8:
     while (true) {
       switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
@@ -566,31 +578,45 @@ public class sqlparser implements sqlparserConstants {
         break label_8;
       }
       jj_consume_token(AND);
-      booleanFactor();
+      f = booleanFactor();
+                        term.addToList(f);
     }
+                {if (true) return term;}
+    throw new Error("Missing return statement in function");
   }
 
 //booleanfactor = (< NOT >)? + booleanTest;
-  static final public void booleanFactor() throws ParseException {
+  static final public BooleanFactor booleanFactor() throws ParseException {
+  BooleanTest t;
+  BooleanFactor f;
+  boolean not = false;
     switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
     case NOT:
       jj_consume_token(NOT);
+             not = true;
       break;
     default:
       jj_la1[21] = jj_gen;
       ;
     }
-    booleanTest();
+    t = booleanTest();
+          f = new BooleanFactor(t);
+          if(not)
+                f.setnot();
+          {if (true) return f;}
+    throw new Error("Missing return statement in function");
   }
 
 // booleantest = predicate | parenthesizedBoolexpr
-  static final public void booleanTest() throws ParseException {
+  static final public BooleanTest booleanTest() throws ParseException {
+        Predicate p;
     switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
     case LEGAL_IDENTIFIER:
     case INT_VALUE:
     case CHAR_STRING:
     case DATE_VALUE:
-      predicate();
+      p = predicate();
+                {if (true) return new BooleanTest(p);}
       break;
     case LEFT_PAREN:
       parenthesizedBoolExpr();
@@ -600,24 +626,33 @@ public class sqlparser implements sqlparserConstants {
       jj_consume_token(-1);
       throw new ParseException();
     }
+    throw new Error("Missing return statement in function");
   }
 
 // parenthesizedBoolexpr = ( + booleanvalueExpr + )
-  static final public void parenthesizedBoolExpr() throws ParseException {
+  static final public BooleanValueExpr parenthesizedBoolExpr() throws ParseException {
+  BooleanValueExpr e;
     jj_consume_token(LEFT_PAREN);
-    booleanValueExpr();
+    e = booleanValueExpr();
     jj_consume_token(RIGHT_PAREN);
+          {if (true) return e;}
+    throw new Error("Missing return statement in function");
   }
 
 // use lookahead to prevent TOKEN ambiguity
 // predicate = comparison Predicate | null Predicate
-  static final public void predicate() throws ParseException {
+  static final public Predicate predicate() throws ParseException {
+  ComparisonPredicate c;
+  NullPredicate n;
+  Predicate p;
     if (jj_2_2(2)) {
-      comparisonPredicate();
+      c = comparisonPredicate();
+                                p = new Predicate(c);
     } else {
       switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
       case LEGAL_IDENTIFIER:
-        nullPredicate();
+        n = nullPredicate();
+                                p = new Predicate(n);
         break;
       default:
         jj_la1[23] = jj_gen;
@@ -625,64 +660,107 @@ public class sqlparser implements sqlparserConstants {
         throw new ParseException();
       }
     }
+                {if (true) return p;}
+    throw new Error("Missing return statement in function");
   }
 
 // comparison Predicate = comparion Operand + < COMP_OP > + comparison Operand
-  static final public void comparisonPredicate() throws ParseException {
-    compOperand();
-    jj_consume_token(COMP_OP);
-    compOperand();
+  static final public ComparisonPredicate comparisonPredicate() throws ParseException {
+  CompOperand a;
+  CompOperand b;
+  Token t;
+  String op;
+    a = compOperand();
+    t = jj_consume_token(COMP_OP);
+                op = t.toString();
+    b = compOperand();
+                {if (true) return new ComparisonPredicate(a, b, op);}
+    throw new Error("Missing return statement in function");
   }
 
 // comparison Operand is comparable value | ( (tableName() + < PERIOD >)? columnName)
 // use lookahead for same reason to above
-  static final public void compOperand() throws ParseException {
+  static final public CompOperand compOperand() throws ParseException {
+  String tn="";
+  String cn;
+  CompOperand c;
+  Value v = null;
+  ColAlias a = null;
+  boolean isdotted = false;
     switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
     case INT_VALUE:
     case CHAR_STRING:
     case DATE_VALUE:
-      comparableValue();
+      v = comparableValue();
+                  c = new CompOperand(v);
       break;
     case LEGAL_IDENTIFIER:
       if (jj_2_3(2)) {
-        tableName();
+        tn = tableName();
         jj_consume_token(PERIOD);
+                            isdotted = true;
       } else {
         ;
       }
-      columnName();
+      cn = columnName();
+                          if(isdotted) {
+                                a = new ColAlias(tn, cn);
+                         }else {
+                                a = new ColAlias(cn);
+                         }
+                         c = new CompOperand(a);
       break;
     default:
       jj_la1[24] = jj_gen;
       jj_consume_token(-1);
       throw new ParseException();
     }
+        {if (true) return c;}
+    throw new Error("Missing return statement in function");
   }
 
 // null predicate = ( tableName()< PERIOD >)? + columnName() + nullOperation()
-  static final public void nullPredicate() throws ParseException {
+  static final public NullPredicate nullPredicate() throws ParseException {
+  String tn = "";
+  String cn;
+  boolean dotted=false;
+  boolean t;
+  NullPredicate n;
+  ColAlias ca;
     if (jj_2_4(2)) {
-      tableName();
+      tn = tableName();
       jj_consume_token(PERIOD);
+          dotted = true;
     } else {
       ;
     }
-    columnName();
-    nullOperation();
+    cn = columnName();
+    t = nullOperation();
+    if(dotted) {
+                ca = new ColAlias(tn, cn);
+    }else {
+                ca = new ColAlias(cn);
+    }
+        {if (true) return new NullPredicate(t, ca);}
+    throw new Error("Missing return statement in function");
   }
 
 // null operation consists of <IS > + (< NOT >)? + < NULL >
-  static final public void nullOperation() throws ParseException {
+  static final public boolean nullOperation() throws ParseException {
+  boolean t =true;
     jj_consume_token(IS);
     switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
     case NOT:
       jj_consume_token(NOT);
+            t = false;
       break;
     default:
       jj_la1[25] = jj_gen;
       ;
     }
     jj_consume_token(NULL);
+                {if (true) return t;}
+    throw new Error("Missing return statement in function");
   }
 
 // deletequery = < DELETE_FROM > + tableName() + whereclause(optional)
@@ -738,18 +816,9 @@ public class sqlparser implements sqlparserConstants {
     finally { jj_save(3, xla); }
   }
 
-  static private boolean jj_3R_11() {
-    Token xsp;
-    xsp = jj_scanpos;
-    if (jj_3R_12()) {
-    jj_scanpos = xsp;
-    if (jj_3R_13()) return true;
-    }
-    return false;
-  }
-
-  static private boolean jj_3R_12() {
-    if (jj_3R_14()) return true;
+  static private boolean jj_3_4() {
+    if (jj_3R_9()) return true;
+    if (jj_scan_token(PERIOD)) return true;
     return false;
   }
 
@@ -758,21 +827,11 @@ public class sqlparser implements sqlparserConstants {
     return false;
   }
 
-  static private boolean jj_3R_10() {
-    if (jj_3R_11()) return true;
-    if (jj_scan_token(COMP_OP)) return true;
-    return false;
-  }
-
-  static private boolean jj_3_3() {
-    if (jj_3R_9()) return true;
-    if (jj_scan_token(PERIOD)) return true;
-    return false;
-  }
-
-  static private boolean jj_3_4() {
-    if (jj_3R_9()) return true;
-    if (jj_scan_token(PERIOD)) return true;
+  static private boolean jj_3R_13() {
+    Token xsp;
+    xsp = jj_scanpos;
+    if (jj_3_3()) jj_scanpos = xsp;
+    if (jj_3R_15()) return true;
     return false;
   }
 
@@ -805,8 +864,35 @@ public class sqlparser implements sqlparserConstants {
     return false;
   }
 
+  static private boolean jj_3_3() {
+    if (jj_3R_9()) return true;
+    if (jj_scan_token(PERIOD)) return true;
+    return false;
+  }
+
+  static private boolean jj_3R_12() {
+    if (jj_3R_14()) return true;
+    return false;
+  }
+
   static private boolean jj_3_2() {
     if (jj_3R_10()) return true;
+    return false;
+  }
+
+  static private boolean jj_3R_11() {
+    Token xsp;
+    xsp = jj_scanpos;
+    if (jj_3R_12()) {
+    jj_scanpos = xsp;
+    if (jj_3R_13()) return true;
+    }
+    return false;
+  }
+
+  static private boolean jj_3R_10() {
+    if (jj_3R_11()) return true;
+    if (jj_scan_token(COMP_OP)) return true;
     return false;
   }
 
@@ -817,14 +903,6 @@ public class sqlparser implements sqlparserConstants {
 
   static private boolean jj_3R_15() {
     if (jj_scan_token(LEGAL_IDENTIFIER)) return true;
-    return false;
-  }
-
-  static private boolean jj_3R_13() {
-    Token xsp;
-    xsp = jj_scanpos;
-    if (jj_3_3()) jj_scanpos = xsp;
-    if (jj_3R_15()) return true;
     return false;
   }
 
