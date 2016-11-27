@@ -7,6 +7,7 @@ public class Predicate {
 	public Predicate(ComparisonPredicate c){
 		this.c = c;
 	}
+	
 	public Predicate(NullPredicate n){
 		this.n = n;
 		this.iscomp = false;
@@ -15,11 +16,20 @@ public class Predicate {
 	public ComparisonPredicate getCompPred(){
 		return this.c;
 	}
+	
 	public NullPredicate getNullPred(){
 		return this.n;
 	}
+	
 	public boolean iscomp(){
 		return this.iscomp;
 	}
 	
+	public Logic evaluate(Table t, int idx) throws Exception, MyException{
+		if(this.iscomp){
+			return null;
+		}else{
+			return n.evaluate(t, idx);
+		}
+	}
 }

@@ -733,7 +733,7 @@ Predicate predicate() :
 }
 {
 	 (	    
-	  	LOOKAHEAD(2)
+	  	LOOKAHEAD(4)
 	  	(
 			c = comparisonPredicate()
 			{
@@ -870,8 +870,10 @@ boolean nullOperation():
 
 
 // deletequery = < DELETE_FROM > + tableName() + whereclause(optional)
-Query deleteQuery() :
-{}
+DeleteQuery deleteQuery() :
+{
+  String tn;
+}
 {
   < DELETE_FROM >
   tableName()

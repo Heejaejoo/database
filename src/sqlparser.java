@@ -645,7 +645,7 @@ public class sqlparser implements sqlparserConstants {
   ComparisonPredicate c;
   NullPredicate n;
   Predicate p;
-    if (jj_2_2(2)) {
+    if (jj_2_2(4)) {
       c = comparisonPredicate();
                                 p = new Predicate(c);
     } else {
@@ -764,7 +764,8 @@ public class sqlparser implements sqlparserConstants {
   }
 
 // deletequery = < DELETE_FROM > + tableName() + whereclause(optional)
-  static final public Query deleteQuery() throws ParseException {
+  static final public DeleteQuery deleteQuery() throws ParseException {
+  String tn;
     jj_consume_token(DELETE_FROM);
     tableName();
     switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
@@ -893,6 +894,7 @@ public class sqlparser implements sqlparserConstants {
   static private boolean jj_3R_10() {
     if (jj_3R_11()) return true;
     if (jj_scan_token(COMP_OP)) return true;
+    if (jj_3R_11()) return true;
     return false;
   }
 

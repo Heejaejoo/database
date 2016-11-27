@@ -1,12 +1,25 @@
 import java.util.ArrayList;
 
 public class BooleanTerm {
-	ArrayList<BooleanFactor> list = new ArrayList<BooleanFactor>();
+	ArrayList<BooleanFactor> and = new ArrayList<BooleanFactor>();
 	
 	public BooleanTerm(){
 	};
 	
 	public void addToList(BooleanFactor a){
-		this.list.add(a);
+		this.and.add(a);
 	}
+	
+	public Logic evaluate(Table t, int idx) throws Exception{
+		int siz = this.and.size();
+		if(siz ==0){
+			throw new Exception();
+		}
+		Logic result = this.and.get(0).evaluate(t, idx);
+ 
+		for(int i=1; i<siz; ++i){
+			result = result.AND(this.and.get(i).evaluate(t, idx));
+		}
+		return result;
+	}	
 }
