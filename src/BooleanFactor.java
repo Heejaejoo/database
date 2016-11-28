@@ -15,7 +15,7 @@ public class BooleanFactor {
 		return this.not;
 	}
 	
-	public Logic evaluate(Table t, int idx) throws Exception{
+	public Logic evaluate(Table t, int idx) throws Exception, MyException{
 		if(this.isnot()){
 			return bt.evaluate(t, idx).NOT();
 		}else{

@@ -145,11 +145,11 @@ public class InsertQuery extends Query{
 	}
 	
 	//need to implement
-	private void primaryKeyValidate(Table t) throws MyException{
+	private void primaryKeyValidate(Table t) throws Exception, MyException{
 //		for(int i=0; i<this.valList.size(); i++){
 //			System.out.println(this.valList.get(i).toString());
 //		}
-		ArrayList<ArrayList<Value> > records = t.getEntries();
+		HashMap<Integer, ArrayList<Value> > records = t.getEntries();
 		ArrayList<Column> clist = t.getColumns();
 		int siz = clist.size();
 		//find primary key index
@@ -167,10 +167,9 @@ public class InsertQuery extends Query{
 		//defined when the table has primary key
 		//check if there is a record which has same primary key to current valuelist
 		if(PKcount>0){
-			int rlen = records.size();
-			for(int i=0; i<rlen; i++){
+			for(Integer k: records.keySet()){
 				int flag = 0;
-				ArrayList<Value> record = records.get(i);
+				ArrayList<Value> record = records.get(k);
 				for(int j=0; j<record.size(); j++){
 					if(arr.get(j).booleanValue()){
 						if(record.get(j).equals(valList.get(j))){
@@ -275,10 +274,11 @@ public class InsertQuery extends Query{
 						throw new Exception();
 					}
 					
-					ArrayList<ArrayList<Value>> records = t.getEntries();
+					HashMap<Integer, ArrayList<Value>> records = t.getEntries();
 					boolean flag = false;
 					//일치하는 record가 있는지 확인
-					for(ArrayList<Value> record: records){
+					for(Integer k: records.keySet()){
+						ArrayList<Value> record = records.get(k);
 						int cnt = 0;
 						int sizz = thisidxlist.size();
 						for(int id = 0; id<sizz; ++id){
@@ -290,14 +290,18 @@ public class InsertQuery extends Query{
 						}
 						//find the one!
 						if(cnt == sizz){
-							flag = true;
-							for(int id = 0; id<sizz; ++id){
-								Value thisvalue = this.valList.get(thisidxlist.get(id));
-								Value thatvalue = record.get(thatidxlist.get(id));
-							//delete시 주의할 것 
-								thatvalue.setReferenced(cur.getName(), thisvalue);
-								thisvalue.setReferencing(t.getName(), thatvalue);
-							}
+//							flag = true;
+//							for(int id = 0; id<sizz; ++id){
+//								Value thisvalue = this.valList.get(thisidxlist.get(id));
+//								Value thatvalue = record.get(thatidxlist.get(id));
+//							//delete시 주의할 것 
+//								thatvalue.setReferenced(cur.getName(), thisvalue);
+//								thisvalue.setReferencing(t.getName(), thatvalue);
+//							}
+							int x = cur.getrownum();
+							cur.setReferencing(x, t.getName(), k);
+							t.setReferenced(k, tbname, new Integer(x));
+							
 							break;
 						}
 					}
@@ -327,7 +331,7 @@ public class InsertQuery extends Query{
 		basicValidate(clist);
 		primaryKeyValidate(t);
 		if(referentialIntegrityValidateAndUpdate(t)){
-			t.getEntries().add(this.valList);
+			t.addEntries(this.valList);
 			dbman.delete(t.getName());
 			dbman.put(t);
 			System.out.println(Messages.InsertResult);

@@ -33,7 +33,10 @@ public class Messages {
 	final static String WhereTableNotSpecified = "Where clause try to reference tables which are not specified";
 	final static String WhereColumnNotExist = "Where clause try to reference non existing column";
 	final static String WhereAmbiguousReference = "Where clause contains ambiguous reference";
-	
+	final static String DeleteResult = "%d row(s) are deleted";
+	final static String DeleteReferentialIntegrityPassed = "%d row(s) are not deleted due to referential integrity";
+	final static String SelectTableExistenceError = "Selection has failed: '%s' does not exist";
+	final static String SelectColumnResolveError = "Selection has failed: fail to resolve '%s'";
 	
 
 }

@@ -10,7 +10,7 @@ public class BooleanTerm {
 		this.and.add(a);
 	}
 	
-	public Logic evaluate(Table t, int idx) throws Exception{
+	public Logic evaluate(Table t, int idx) throws Exception, MyException{
 		int siz = this.and.size();
 		if(siz ==0){
 			throw new Exception();

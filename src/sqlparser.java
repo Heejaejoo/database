@@ -766,22 +766,29 @@ public class sqlparser implements sqlparserConstants {
 // deletequery = < DELETE_FROM > + tableName() + whereclause(optional)
   static final public DeleteQuery deleteQuery() throws ParseException {
   String tn;
+  BooleanValueExpr br = null;
+  boolean flag  = false;
     jj_consume_token(DELETE_FROM);
-    tableName();
+    tn = tableName();
     switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
     case WHERE:
-      whereClause();
+      br = whereClause();
+                flag = true;
       break;
     default:
       jj_la1[26] = jj_gen;
       ;
     }
-        {if (true) return null;}
+    if(flag) {
+                {if (true) return new DeleteQuery(tn, br);}
+    }else {
+      {if (true) return new DeleteQuery(tn);}
+    }
     throw new Error("Missing return statement in function");
   }
 
 // show table query is just <SHOW TABLES >
-  static final public ShowTableQuery showTableQuery() throws ParseException, Exception {
+  static final public ShowTableQuery showTableQuery() throws ParseException, Exception, MyException {
   ShowTableQuery query;
     jj_consume_token(SHOW_TABLES);
     query = new ShowTableQuery();

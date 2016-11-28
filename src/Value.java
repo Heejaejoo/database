@@ -23,11 +23,11 @@ public class Value implements Serializable{
 	private int type;
 	private String val;
 	//needs upgrade
-	private ArrayList<Value> referencing = new ArrayList<Value>();
-	private ArrayList<String> referingTable = new ArrayList<String>();
-	private ArrayList<Value> referenced = new ArrayList<Value>();
-	private ArrayList<String> referedTable = new ArrayList<String>();
-	
+//	private ArrayList<Value> referencing = new ArrayList<Value>();
+//	private ArrayList<String> referingTable = new ArrayList<String>();
+//	private ArrayList<Value> referenced = new ArrayList<Value>();
+//	private ArrayList<String> referedTable = new ArrayList<String>();
+//	
 	public Value(int dt, String value){
 		this.type = dt;
 		this.val = value;
@@ -37,15 +37,15 @@ public class Value implements Serializable{
 		this.type = dt;
 	}
 	
-	public void setReferencing(String tbname, Value e){
-		this.referencing.add(e);
-		this.referingTable.add(tbname);
-	}
-	
-	public void setReferenced(String tbname, Value e){
-		this.referenced.add(e);
-		this.referedTable.add(tbname);
-	}
+//	public void setReferencing(String tbname, Value e){
+//		this.referencing.add(e);
+//		this.referingTable.add(tbname);
+//	}
+//	
+//	public void setReferenced(String tbname, Value e){
+//		this.referenced.add(e);
+//		this.referedTable.add(tbname);
+//	}
 	
 	public boolean isInt(){
 		return this.type == 0;
@@ -70,23 +70,86 @@ public class Value implements Serializable{
 	public void setVal(String s){
 		this.val = s;
 	}
+	public void setNull(){
+		this.type = 3;
+		this.val = "";
+	}
+	
 	//works correctly only correct input is inserted;
 	//no exception handling
 	public int getIntVal(){
 		return Integer.parseInt(this.val);
 	}
 	
-	public boolean equals(Value oth){
+	public boolean equals(Value oth) throws Exception, MyException{
 		if(this.isNull() || oth.isNull()){
 			return false;
 		}
 		else{
 			if(this.getType() != oth.getType()){
-				return false;
+				throw new MyException(Messages.WhereIncomparableError);
 			}
 			return this.val.equals(oth.getVal());
 		}
 	}
+	
+	public boolean cmp(Value oth, String cp) throws MyException, Exception{
+		if(this.getType() != oth.getType()){
+			throw new MyException(Messages.WhereIncomparableError);
+		}
+		if(this.isInt()){
+			int a = Integer.parseInt(this.getVal());
+			int b = Integer.parseInt(oth.getVal());
+			if(cp.equals("=")){
+				return a == b;
+			}else if (cp.equals("<")){
+				return a<b;
+			}else if (cp.equals(">")){
+				return a>b;
+			}else if (cp.equals("<=")){
+				return a<=b;
+			}else if (cp.equals(">=")){
+				return a>=b;
+			}else {
+				return a!=b;
+			}
+			
+		}else if (this.isChar()){
+			String a = this.getVal();
+			String b = oth.getVal();
+			if(cp.equals("=")){
+				return a.compareTo(b)==0;
+			}else if (cp.equals("<")){
+				return a.compareTo(b)<0;
+			}else if (cp.equals(">")){
+				return a.compareTo(b)>0;
+			}else if (cp.equals("<=")){
+				return a.compareTo(b)<=0;
+			}else if (cp.equals(">=")){
+				return a.compareTo(b)>=0;
+			}else {
+				return a.compareTo(b) !=0;
+			}
+		}else {
+			String a = this.getVal();
+			String b = oth.getVal();
+			if(cp.equals("=")){
+				return a.compareTo(b)==0;
+			}else if (cp.equals("<")){
+				return a.compareTo(b)<0;
+			}else if (cp.equals(">")){
+				return a.compareTo(b)>0;
+			}else if (cp.equals("<=")){
+				return a.compareTo(b)<=0;
+			}else if (cp.equals(">=")){
+				return a.compareTo(b)>=0;
+			}else {
+				return a.compareTo(b) !=0;
+			}
+		}
+
+	}
+	
 	
 	public String toString(){
 		if(this.isNull()){

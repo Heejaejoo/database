@@ -14,11 +14,11 @@ public class BooleanTest {
 		this.ispredicate = false;
 	}
 	
-	public boolean ispredicate(){
+	public boolean isPredicate(){
 		return this.ispredicate;
 	}
-	public Logic evaluate(Table t, int idx) throws Exception{
-		if(this.ispredicate()){
+	public Logic evaluate(Table t, int idx) throws Exception, MyException{
+		if(this.isPredicate()){
 			return this.pred.evaluate(t, idx);
 		}else
 		{

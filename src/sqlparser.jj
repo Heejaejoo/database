@@ -873,20 +873,29 @@ boolean nullOperation():
 DeleteQuery deleteQuery() :
 {
   String tn;
+  BooleanValueExpr br = null;
+  boolean flag  = false;
 }
 {
   < DELETE_FROM >
-  tableName()
+  tn = tableName()
   (
-    whereClause()
+    br = whereClause()
+	{
+		flag = true;
+	}
   )?
   {
-	return null;
+    if(flag) {
+		return new DeleteQuery(tn, br);
+    }else {
+      return new DeleteQuery(tn);
+    }
   }
 }
 
 // show table query is just <SHOW TABLES >
-ShowTableQuery showTableQuery() throws Exception:
+ShowTableQuery showTableQuery() throws Exception, MyException:
 {
   ShowTableQuery query;
  }

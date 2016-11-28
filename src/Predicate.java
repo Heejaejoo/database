@@ -27,7 +27,7 @@ public class Predicate {
 	
 	public Logic evaluate(Table t, int idx) throws Exception, MyException{
 		if(this.iscomp){
-			return null;
+			return c.evaluate(t, idx);
 		}else{
 			return n.evaluate(t, idx);
 		}

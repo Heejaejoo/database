@@ -1,7 +1,13 @@
+import java.io.Serializable;
+
 //generate generic pair data structure
 
-public class Pair<F, S> {
-    private F first; //first member of pair
+public class Pair<F, S> implements Serializable {
+    /**
+	 * 
+	 */
+	private static final long serialVersionUID = -2423070581232886441L;
+	private F first; //first member of pair
     private S second; //second member of pair
 
     public Pair(F first, S second) {
