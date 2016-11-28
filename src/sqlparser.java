@@ -415,22 +415,26 @@ public class sqlparser implements sqlparserConstants {
   }
 
 //select query consists of <SELECT > + selectList() + tableExpr()
-  static final public Query selectQuery() throws ParseException {
+  static final public SelectQuery selectQuery() throws ParseException {
+  SelectQuery q = new SelectQuery() { };
     jj_consume_token(SELECT);
-    selectList();
-    tableExpr();
-                {if (true) return null;}
+    selectList(q);
+    tableExpr(q);
+                {if (true) return q;}
     throw new Error("Missing return statement in function");
   }
 
 //select list consists of <STAR > | selectedColumn() + [<COMMA >,selectedColumn()]*	
-  static final public void selectList() throws ParseException {
+  static final public void selectList(SelectQuery q) throws ParseException {
+  ColAlias c;
     switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
     case STAR:
       jj_consume_token(STAR);
+                  q.setStar();
       break;
     case LEGAL_IDENTIFIER:
-      selectedColumn();
+      c = selectedColumn();
+                        q.addColumns(c);
       label_5:
       while (true) {
         switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
@@ -442,7 +446,8 @@ public class sqlparser implements sqlparserConstants {
           break label_5;
         }
         jj_consume_token(COMMA);
-        selectedColumn();
+        c = selectedColumn();
+                        q.addColumns(c);
       }
       break;
     default:
@@ -454,31 +459,48 @@ public class sqlparser implements sqlparserConstants {
 
 // use LOOKAHEAD to avoid TOKEN ambiguity
 // selectedColumn = (tableName+< PERIOD >)? + columnName() + (< AS >columnName)?
-  static final public void selectedColumn() throws ParseException {
+  static final public ColAlias selectedColumn() throws ParseException {
+  String tbn = null;
+  String coln = null;
+  String alias = null;
     if (jj_2_1(2)) {
-      tableName();
+      tbn = tableName();
       jj_consume_token(PERIOD);
     } else {
       ;
     }
-    columnName();
+    coln = columnName();
     switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
     case AS:
       jj_consume_token(AS);
-      columnName();
+      alias = columnName();
       break;
     default:
       jj_la1[15] = jj_gen;
       ;
     }
+                if(tbn == null && alias == null) {
+                        {if (true) return new ColAlias(coln);}
+                }else if (tbn == null) {
+                        {if (true) return new ColAlias(coln, alias, true);}
+                }else if (alias == null) {
+                        {if (true) return new ColAlias(tbn, coln);}
+                }else {
+                        {if (true) return new ColAlias(tbn, coln, alias);}
+                }
+    throw new Error("Missing return statement in function");
   }
 
 // tableExpr = fromClause + (whereClause)?
-  static final public void tableExpr() throws ParseException {
-    fromClause();
+  static final public void tableExpr(SelectQuery q) throws ParseException {
+        ArrayList<TableAlias > t;
+        BooleanValueExpr v;
+    t = fromClause();
+                q.addTables(t);
     switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
     case WHERE:
-      whereClause();
+      v = whereClause();
+                q.addWhere(v);
       break;
     default:
       jj_la1[16] = jj_gen;
@@ -487,14 +509,20 @@ public class sqlparser implements sqlparserConstants {
   }
 
 // fromClause = < FROM > + tableReflist()
-  static final public void fromClause() throws ParseException {
+  static final public ArrayList<TableAlias > fromClause() throws ParseException {
+  ArrayList<TableAlias > t;
     jj_consume_token(FROM);
-    tableReferenceList();
+    t = tableReferenceList();
+                {if (true) return t;}
+    throw new Error("Missing return statement in function");
   }
 
 // tableReflist() = referedTable + (< COMMA > + referedTable )*
-  static final public void tableReferenceList() throws ParseException {
-    referedTable();
+  static final public ArrayList<TableAlias > tableReferenceList() throws ParseException {
+  TableAlias t;
+  ArrayList<TableAlias > tbs = new ArrayList<TableAlias >();
+    t = referedTable();
+                tbs.add(t);
     label_6:
     while (true) {
       switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
@@ -506,22 +534,36 @@ public class sqlparser implements sqlparserConstants {
         break label_6;
       }
       jj_consume_token(COMMA);
-      referedTable();
+      t = referedTable();
+            tbs.add(t);
     }
+                {if (true) return tbs;}
+    throw new Error("Missing return statement in function");
   }
 
 // referedTable() = tableName + (< AS >tableName)?
-  static final public void referedTable() throws ParseException {
-    tableName();
+  static final public TableAlias referedTable() throws ParseException {
+  TableAlias t;
+  String tbname;
+  String alias="";
+  boolean isdotted = false;
+    tbname = tableName();
     switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
     case AS:
       jj_consume_token(AS);
-      tableName();
+      alias = tableName();
+            isdotted = true;
       break;
     default:
       jj_la1[18] = jj_gen;
       ;
     }
+                if(isdotted) {
+                        {if (true) return new TableAlias(tbname, alias);}
+                }else {
+                        {if (true) return new TableAlias(tbname);}
+                }
+    throw new Error("Missing return statement in function");
   }
 
 // whereclause consists of <WHERE > + boolValueexpr
@@ -827,12 +869,6 @@ public class sqlparser implements sqlparserConstants {
     finally { jj_save(3, xla); }
   }
 
-  static private boolean jj_3_4() {
-    if (jj_3R_9()) return true;
-    if (jj_scan_token(PERIOD)) return true;
-    return false;
-  }
-
   static private boolean jj_3R_18() {
     if (jj_scan_token(DATE_VALUE)) return true;
     return false;
@@ -846,8 +882,24 @@ public class sqlparser implements sqlparserConstants {
     return false;
   }
 
+  static private boolean jj_3_3() {
+    if (jj_3R_9()) return true;
+    if (jj_scan_token(PERIOD)) return true;
+    return false;
+  }
+
   static private boolean jj_3R_9() {
     if (jj_scan_token(LEGAL_IDENTIFIER)) return true;
+    return false;
+  }
+
+  static private boolean jj_3R_12() {
+    if (jj_3R_14()) return true;
+    return false;
+  }
+
+  static private boolean jj_3_2() {
+    if (jj_3R_10()) return true;
     return false;
   }
 
@@ -864,6 +916,16 @@ public class sqlparser implements sqlparserConstants {
     return false;
   }
 
+  static private boolean jj_3R_11() {
+    Token xsp;
+    xsp = jj_scanpos;
+    if (jj_3R_12()) {
+    jj_scanpos = xsp;
+    if (jj_3R_13()) return true;
+    }
+    return false;
+  }
+
   static private boolean jj_3R_17() {
     if (jj_scan_token(CHAR_STRING)) return true;
     return false;
@@ -875,36 +937,16 @@ public class sqlparser implements sqlparserConstants {
     return false;
   }
 
-  static private boolean jj_3_3() {
-    if (jj_3R_9()) return true;
-    if (jj_scan_token(PERIOD)) return true;
-    return false;
-  }
-
-  static private boolean jj_3R_12() {
-    if (jj_3R_14()) return true;
-    return false;
-  }
-
-  static private boolean jj_3_2() {
-    if (jj_3R_10()) return true;
-    return false;
-  }
-
-  static private boolean jj_3R_11() {
-    Token xsp;
-    xsp = jj_scanpos;
-    if (jj_3R_12()) {
-    jj_scanpos = xsp;
-    if (jj_3R_13()) return true;
-    }
-    return false;
-  }
-
   static private boolean jj_3R_10() {
     if (jj_3R_11()) return true;
     if (jj_scan_token(COMP_OP)) return true;
     if (jj_3R_11()) return true;
+    return false;
+  }
+
+  static private boolean jj_3_4() {
+    if (jj_3R_9()) return true;
+    if (jj_scan_token(PERIOD)) return true;
     return false;
   }
 

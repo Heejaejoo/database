@@ -12,13 +12,16 @@ public class Table implements Serializable{
 	private static final long serialVersionUID = -9172272818248838214L;
 	
 	private String tableName;
+	private ArrayList<String> tbnamelist = new ArrayList<String>();
+	
 	private ArrayList<Column> columns = new ArrayList<Column>();
 	public int PKcount = 0;
 	public int rownum = 0;
-
+	
 	private HashMap<Integer, ArrayList<Value> > entries = new HashMap<Integer, ArrayList<Value> >();
 	private HashMap<Integer, ArrayList<Pair<String, Integer > > > referencing = new HashMap <Integer, ArrayList<Pair<String, Integer> > >(); 
 	private HashMap<Integer, ArrayList<Pair<String, Integer> > > referenced= new HashMap <Integer, ArrayList<Pair<String, Integer> > >(); 
+	
 	
 	private boolean checkColumnDuplicate(ArrayList<Column> cols){
 		Set<String> set = new HashSet<String>();
@@ -110,6 +113,7 @@ public class Table implements Serializable{
 	
 	public Table(String tn, ArrayList<Column> cols, ArrayList<PrimaryKeyConstraint> pks) throws MyException, Exception{
 		this.tableName = tn;
+		tbnamelist.add(this.tableName);
 		this.columns.addAll(cols);
 		// Column Duplicate check
 		if(!checkColumnDuplicate(cols)){
@@ -158,6 +162,33 @@ public class Table implements Serializable{
 		vlist.addAll(valist);
 		entries.put(this.rownum, vlist);
 		this.rownum++;
+	}
+	
+	
+	public void cartesianProduct(Table oth){		
+		tbnamelist.add(oth.getName());
+		for(int i=0; i<columns.size(); ++i){
+			columns.get(i).setDotAndTbname(tableName);
+		}
+		ArrayList<Column> othClist = oth.getColumns();
+		for(int i=0; i<othClist.size(); ++i){
+			Column c = othClist.get(i);
+			c.setDotAndTbname(oth.getName());
+			columns.add(c);
+		}
+		HashMap<Integer, ArrayList<Value>> thisentry = new HashMap<Integer, ArrayList<Value>>(this.getEntries());
+		HashMap<Integer, ArrayList<Value>> othentry = oth.getEntries();
+		HashMap<Integer, ArrayList<Value>> res = new HashMap<Integer, ArrayList<Value>>();
+		this.rownum = 0;
+		for(Integer i: thisentry.keySet()){
+			for(Integer j: othentry.keySet()){
+				ArrayList<Value> newentry = new ArrayList<Value>(thisentry.get(i));
+				newentry.addAll(othentry.get(j));
+				res.put(this.rownum, newentry);
+				this.rownum++;
+			}
+		}
+		this.entries = res;
 	}
 	
 	public void prettyPrint(){

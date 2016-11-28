@@ -8,6 +8,8 @@ public class Column implements Serializable{
 	private static final long serialVersionUID = -3723635484032957157L;
 	private String columnName;
 	private DataType type;
+	private boolean isDotted = false;
+	private String tbName;
 	private boolean notNull;
 	private boolean PK = false;
 	private boolean FK = false;
@@ -15,6 +17,8 @@ public class Column implements Serializable{
 	private ArrayList<String> referingColumn = new ArrayList<String> ();
 	
 	public String getName(){
+		if(this.isDotted)
+			return this.tbName + "." + this.columnName;
 		return this.columnName;
 	}
 	
@@ -27,6 +31,15 @@ public class Column implements Serializable{
 	}
 	public void setNotNull(){
 		this.notNull = true;
+	}
+	
+	public void setDotAndTbname(String tbname){
+		this.isDotted = true;
+		this.tbName = tbname;
+	}
+	
+	public String getTbName(){
+		return this.tbName;
 	}
 	
 	public void printAll(){

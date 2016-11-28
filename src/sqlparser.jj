@@ -529,85 +529,158 @@ Value value():
 }
 
 //select query consists of <SELECT > + selectList() + tableExpr()
-Query selectQuery() :
-{}
+SelectQuery selectQuery() :
+{
+  SelectQuery q = new SelectQuery() { };
+}
 {
 	< SELECT >
-	selectList()
-	tableExpr() { 
-		return null;
+	selectList(q)
+	tableExpr(q)
+	{ 
+		return q;
 	}
 	
 }
 
 //select list consists of <STAR > | selectedColumn() + [<COMMA >,selectedColumn()]*	
-void selectList() :
-{}
+void selectList(SelectQuery q) :
 {
-	< STAR >
-	|
-	selectedColumn()
-	(
-	  < COMMA >
-	  selectedColumn()
-	)*
+  ColAlias c;
+  
+}
+{
+	(	  < STAR >
+		{
+		  q.setStar();
+		}
+	)
+	|(
+		c = selectedColumn()
+		{
+			q.addColumns(c);
+		}
+		(
+		  < COMMA >
+		  c = selectedColumn()
+		  { 
+		  	q.addColumns(c);
+		  }
+		)*
+	)
 }
 
 // use LOOKAHEAD to avoid TOKEN ambiguity
 // selectedColumn = (tableName+< PERIOD >)? + columnName() + (< AS >columnName)?
-void selectedColumn() :
-{}
+ColAlias selectedColumn() :
+{
+  String tbn = null;
+  String coln = null;
+  String alias = null;
+}
 {
 	(
   	  LOOKAHEAD(2)
-	  tableName()
+	  tbn = tableName()
 	  < PERIOD >
 	)?
-	columnName()
+	coln = columnName()
 	(
 	  < AS >
-	  columnName()
+	  alias = columnName()
 	)?
+	{
+		if(tbn == null && alias == null) {
+			return new ColAlias(coln);
+		}else if (tbn == null) {
+			return new ColAlias(coln, alias, true);
+		}else if (alias == null) {
+			return new ColAlias(tbn, coln);
+		}else {
+			return new ColAlias(tbn, coln, alias);
+		}
+	}
 }
 
 // tableExpr = fromClause + (whereClause)?
-void tableExpr():
-{}
+void tableExpr(SelectQuery q):
 {
-	fromClause()
+ 	ArrayList<TableAlias > t;
+	BooleanValueExpr v;
+}
+{
+	t = fromClause()
+	{
+		q.addTables(t);
+	}
 	(
-	  whereClause()
+	  v = whereClause()
+	  { 
+	  	q.addWhere(v);
+	  }
 	)?
 }
 
 // fromClause = < FROM > + tableReflist()
-void fromClause():
-{}
+ArrayList<TableAlias > fromClause():
+{
+  ArrayList<TableAlias > t;
+}
 {	
 	< FROM >
-	tableReferenceList()
+	t = tableReferenceList()
+	{
+		return t;
+	}
 }
 
 // tableReflist() = referedTable + (< COMMA > + referedTable )*
-void tableReferenceList():
-{}
+ArrayList<TableAlias > tableReferenceList():
 {
-	referedTable()
+  TableAlias t;
+  ArrayList<TableAlias > tbs = new ArrayList<TableAlias >();
+}
+{
+	t = referedTable()
+	{
+		tbs.add(t);
+	}
 	(
 	  < COMMA >
-	  referedTable()
+	  t = referedTable()
+	  {
+	    tbs.add(t);
+	  }
 	)*
+	{
+		return tbs;
+	}
 }
 
 // referedTable() = tableName + (< AS >tableName)?
-void referedTable():
-{}
+TableAlias referedTable():
 {
-	tableName()
+  TableAlias t;
+  String tbname;
+  String alias="";
+  boolean isdotted = false;
+}
+{
+	tbname = tableName()
 	(
 	  < AS >
-	  tableName()
+	  alias = tableName()
+	  {
+	    isdotted = true;
+	  }
 	)?
+	{
+		if(isdotted) {
+			return new TableAlias(tbname, alias);
+		}else {
+			return new TableAlias(tbname);
+		}
+	}
 }
 
 // whereclause consists of <WHERE > + boolValueexpr
