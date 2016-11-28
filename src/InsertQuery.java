@@ -290,7 +290,7 @@ public class InsertQuery extends Query{
 						}
 						//find the one!
 						if(cnt == sizz){
-//							flag = true;
+							flag = true;
 //							for(int id = 0; id<sizz; ++id){
 //								Value thisvalue = this.valList.get(thisidxlist.get(id));
 //								Value thatvalue = record.get(thatidxlist.get(id));
@@ -299,9 +299,8 @@ public class InsertQuery extends Query{
 //								thisvalue.setReferencing(t.getName(), thatvalue);
 //							}
 							int x = cur.getrownum();
-							cur.setReferencing(x, t.getName(), k);
-							t.setReferenced(k, tbname, new Integer(x));
-							
+							cur.setReferencing(x, tbname, k);
+							t.setReferenced(k, cur.getName(), new Integer(x));
 							break;
 						}
 					}

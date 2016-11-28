@@ -855,13 +855,15 @@ boolean nullOperation():
 }
 {
 	< IS >
-	(
-	  < NOT >
-	  {
-	    t = false;
-	  }
-	)?
-	< NULL >
+	(	  	(
+		  < NULL >
+		)|
+		(
+		  < NOT_NULL >
+		  {
+		    t = false;
+		  }		)
+	)
 	{
 		return t;
 	}

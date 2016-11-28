@@ -40,6 +40,8 @@ public class DeleteQuery extends Query{
 				}
 			}
 		}
+		//TODO: 아무것도 없을 때 where clause들어오는거. 
+		
 		//settting is done; 
 		//check refrential integrity;
 		//this value is to be set true when there is one record which violates refrential integrity
@@ -48,8 +50,8 @@ public class DeleteQuery extends Query{
 		HashMap<String, Table> referencingTable = new HashMap<String, Table>();
 		HashMap<String, Table> referedTable = new HashMap<String, Table>();
 		ArrayList<Integer> done = new ArrayList<Integer>();
-		//TODO: handle concurrent modification
 		
+		//TODO: handle concurrent modification
 		for(Integer i: t.getEntries().keySet()){
 			if(!possible.get(i).booleanValue()){
 				//삭제할 대상이 아닌 경우 
@@ -63,12 +65,14 @@ public class DeleteQuery extends Query{
 					String tn = refering.getFirst();
 					Integer idx = refering.getSecond();
 					Table referingt;
+					
 					if(referedTable.containsKey(tn))
 					{
 						referingt = referedTable.get(tn);
 					}else{
 						referingt = dbman.get(tn, 2);
 					}
+					
 					ArrayList<Value> referingTuple = referingt.getEntries().get(idx);
 					ArrayList<Column> referingClist = referingt.getColumns();
 					int ssizz = referingClist.size();
@@ -79,6 +83,7 @@ public class DeleteQuery extends Query{
 						Column c = referingClist.get(p);
 						ArrayList<String> tbNameList = c.getReftb();
 						ArrayList<String> refColNameList = c.getRefcol();
+						
 						//이 칼럼의 referencing list
 						//c의 ref list를 순회하면서 map에 push
 						int refsize = tbNameList.size();
@@ -99,10 +104,15 @@ public class DeleteQuery extends Query{
 							}
 						}
 					}
+					for(String s: foreignKeyMap.keySet()){
+						System.out.println("tn" + s);
+						for(String ttt: foreignKeyMap.get(s)){
+							System.out.println("cn" + ttt);
+						}
+					}
 					
 					ArrayList<Integer> thisidxlist = foreignKeyIdxMap.get(t.getName());
 					//construct idx list of this, that
-					
 					int thisidxsize = thisidxlist.size();
 					for(int j=0; j<thisidxsize; ++j){
 						if(referingClist.get(thisidxlist.get(j)).isNotNull()){
@@ -121,14 +131,14 @@ public class DeleteQuery extends Query{
 					}
 					t.deReferenced(i, referingt.getName(), idx);
 					referingt.deReferencing(idx, t.getName(), i);
+					referedTable.put(referingt.getName(), referingt);
 				}
-				if(flag) break;
 			}
 			
 			if(flag){
 				deleteFailedCount++;
 				continue;
-			}else if (t.getReferenced().containsKey(i)){
+			}else {
 				for(String tn: referedTable.keySet()){
 					dbman.delete(tn);
 					dbman.put(referedTable.get(tn));

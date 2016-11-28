@@ -12,7 +12,7 @@ public class Main {
 	        parser.command();
 	      }catch (MyException e){
 	    	  System.out.println(e.getMessage());
-	   // 	  e.printStackTrace();
+	    	  e.printStackTrace();
 	    	  sqlparser.ReInit(System.in);
 			  System.out.print("DB_2009-13389> ");
 	      }

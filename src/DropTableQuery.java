@@ -25,6 +25,7 @@ public class DropTableQuery extends Query{
 				}
 			}
 		}
+		
 		DeleteQuery q = new DeleteQuery(this.tableName){};
 		q.execute();
 		if(dbman.delete(this.tableName) == 1 ){
