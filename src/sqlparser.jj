@@ -772,14 +772,21 @@ BooleanFactor booleanFactor():
 // booleantest = predicate | parenthesizedBoolexpr
 BooleanTest booleanTest():
 {
- 	Predicate p; 
+ 	Predicate p;
+ 	BooleanValueExpr e;
 }
 {
-	p = predicate()
-	{
-		return new BooleanTest(p);
-	}
-	| parenthesizedBoolExpr() 
+	(	  p = predicate()
+		{
+			return new BooleanTest(p);
+		}
+	)
+	| (
+	  e = parenthesizedBoolExpr()
+		{
+		  return new BooleanTest(e);
+		}
+	)
 }
 
 // parenthesizedBoolexpr = ( + booleanvalueExpr + )

@@ -25,6 +25,9 @@ public class DeleteQuery extends Query{
 		HashMap<Integer, Boolean> possible = new HashMap<Integer, Boolean>();
 //		ArrayList<Boolean> rowEval = new ArrayList<Boolean>();
 		ArrayList<Column> cols = t.getColumns();
+		for(Column cls: cols){
+			cls.setDotAndTbname(this.tableName);
+		}
 		//dummy evaluate
 		//TODO: implement referential integrity
 		if(this.whereclause == null){
@@ -62,9 +65,13 @@ public class DeleteQuery extends Query{
 			boolean flag = false;
 			if(t.getReferenced().containsKey(i)){
 				ArrayList<Pair<String, Integer>> referenced = t.getReferenced().get(i);
+				ArrayList<Integer> intrecord = new ArrayList<Integer>();
+				ArrayList<String> strrecord = new ArrayList<String>();
+				ArrayList<Integer> intrecord2 = new ArrayList<Integer>();
 				for(Pair<String, Integer> refering: referenced){
 					String tn = refering.getFirst();
 					Integer idx = refering.getSecond();
+					System.out.println(tn + " of " + idx.toString() + "is refering this column " + i.intValue());
 					Table referingt;
 					
 					if(referedTable.containsKey(tn))
@@ -105,12 +112,6 @@ public class DeleteQuery extends Query{
 							}
 						}
 					}
-					for(String s: foreignKeyMap.keySet()){
-						System.out.println("tn" + s);
-						for(String ttt: foreignKeyMap.get(s)){
-							System.out.println("cn" + ttt);
-						}
-					}
 					
 					ArrayList<Integer> thisidxlist = foreignKeyIdxMap.get(t.getName());
 					//construct idx list of this, that
@@ -130,9 +131,16 @@ public class DeleteQuery extends Query{
 						int thisid = thisidxlist.get(l);
 						referingTuple.get(thisid).setNull();
 					}
-					t.deReferenced(i, referingt.getName(), idx);
+//					t.deReferenced(i, referingt.getName(), idx);
+					//concurrent modification prevention
+					intrecord.add(i);
+					strrecord.add(referingt.getName());
+					intrecord2.add(idx);
 					referingt.deReferencing(idx, t.getName(), i);
 					referedTable.put(referingt.getName(), referingt);
+				}
+				for(int ii=0; ii<intrecord.size(); ++ii){
+					t.deReferenced(intrecord.get(ii), strrecord.get(ii), intrecord2.get(ii));
 				}
 			}
 			
@@ -151,6 +159,9 @@ public class DeleteQuery extends Query{
 			//refering 하는 것은 
 			if(t.getReferencing().containsKey(i)){
 				ArrayList<Pair<String, Integer>> referencing = t.getReferencing().get(i);
+				ArrayList<Integer> intrecord = new ArrayList<Integer>();
+				ArrayList<String> strrecord = new ArrayList<String>();
+				ArrayList<Integer> intrecord2 = new ArrayList<Integer>();
 				for(Pair<String, Integer> reference: referencing){
 					String tn = reference.getFirst();
 					Integer idx = reference.getSecond();
@@ -163,12 +174,15 @@ public class DeleteQuery extends Query{
 						referedt = dbman.get(tn, 2);
 						f = true;
 					}
+					intrecord.add(i);
+					strrecord.add(tn);
+					intrecord2.add(idx);
 					referedt.deReferenced(idx, t.getName(), i);
-					t.deReferencing(i, tn, idx);
-					if(f){
 						//successfully updated;
-						referencingTable.put(tn, referedt);
-					}
+					referencingTable.put(tn, referedt);
+				}
+				for(int ii=0; ii<intrecord.size(); ++ii){
+					t.deReferencing(intrecord.get(ii), strrecord.get(ii), intrecord2.get(ii));
 				}
 			}
 			deletedCount++;

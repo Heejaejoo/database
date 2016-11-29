@@ -50,4 +50,13 @@ public class ColAlias {
 	public boolean isdotted(){
 		return this.type ==1;
 	}
+	public String toString(){
+		if(this.type == 1){
+			return this.tablename + "." + this.colname;
+		}else{
+			return this.colname;
+		}
+	}
+	
+	
 }

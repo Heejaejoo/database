@@ -46,6 +46,7 @@ public class SelectQuery extends Query{
 		for(int i=1; i<tables.size(); ++i){
 			TableAlias cur = tables.get(i);
 			String curTbname = cur.gettbname();
+			System.out.println(curTbname);
 			Table curt = dbman.get(curTbname, 3);
 			t.cartesianProduct(curt, cur);
 		}
@@ -68,10 +69,7 @@ public class SelectQuery extends Query{
 				}
 			}
 		}
-//		if(cnt == 0){
-//			System.out.println("Empty set");
-//			return;
-//		}
+		
 		ArrayList<Integer> idxList = new ArrayList<Integer>();
 		//select column list check
 		int s = t.getColumns().size();
@@ -79,10 +77,10 @@ public class SelectQuery extends Query{
 		if(!star){
 			for(ColAlias col: columns){
 				int loc =-1;
+//				System.out.println(col.toString());
 				String cn = col.getColName();
 				String ttn = col.getTbName();
 				if(col.isdotted()){
-					
 					boolean f = false;
 					for(String tblist: t.getTableNameList()){
 						if(tblist.equals(ttn)){
@@ -95,7 +93,7 @@ public class SelectQuery extends Query{
 						throw new MyException(String.format(Messages.SelectColumnResolveError, cn));
 					}
 					for(int i=0; i<s; ++i){
-						if(schema.get(i).getName().equals(cn) && schema.get(i).getTbName().equals(tn)){
+						if(schema.get(i).getName().equals(cn) && schema.get(i).getTbName().equals(ttn)){
 							loc = i;
 						}
 					}
@@ -123,12 +121,45 @@ public class SelectQuery extends Query{
 				idxList.add(new Integer(i));
 			}
 		}
+		
+		//record가 없는 경우  
+		if(cnt == 0){
+			System.out.println("Empty set");
+			return;
+		}
+		
 		//finialized, need pretty print
-		
-		
-		
-		
-		
-		
+		System.out.println("-------------------------------------------------");
+    	String ss = "|";
+    	if(star){
+		    for(int i=0; i<schema.size(); ++i){
+		    	ss += schema.get(i).getName();
+		    	ss += "|";
+		    }
+    	}else {
+    		for(int i=0; i<idxList.size(); ++i){
+    			if(columns.get(i).hasAlias()){
+    				ss += columns.get(i).getAlias();
+    			}else{
+    				ss += columns.get(i).getColName();
+    			}
+    			ss += "|";
+		    }
+    	}
+    	System.out.println(ss);
+	    System.out.println("-------------------------------------------------");
+	    for(Integer i: t.getEntries().keySet()){
+	    	if(possible.get(i).booleanValue()){
+	    		ss = "|";
+	    		ArrayList<Value> vv = t.getEntries().get(i);
+	    		for(int j=0; j<idxList.size(); ++j){
+	    			int k= idxList.get(j).intValue();
+	    			ss += vv.get(k).toString();
+	    			ss += "|";
+	    		}
+	    		System.out.println(ss);
+	    	    System.out.println("-------------------------------------------------");
+	    	}
+	    }
 	}
 }

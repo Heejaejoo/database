@@ -335,7 +335,7 @@ public class InsertQuery extends Query{
 			dbman.put(t);
 			System.out.println(Messages.InsertResult);
 			Table r = dbman.get(t.getName(), 2);
-			r.prettyPrint();
+//			r.prettyPrint();
 		};
 	}
 }
