@@ -37,6 +37,6 @@ public class Messages {
 	final static String DeleteReferentialIntegrityPassed = "%d row(s) are not deleted due to referential integrity";
 	final static String SelectTableExistenceError = "Selection has failed: '%s' does not exist";
 	final static String SelectColumnResolveError = "Selection has failed: fail to resolve '%s'";
-	
+	final static String NotUniqueTableAliasError = "Not unique table/alias %s";
 
 }

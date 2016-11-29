@@ -34,6 +34,9 @@ public class Table implements Serializable{
 	public String getName(){
 		return this.tableName;
 	}
+	public ArrayList<String> getTableNameList(){
+		return this.tbnamelist;
+	}
 	public ArrayList<Column> getColumns(){
 		return this.columns;
 	}
@@ -164,16 +167,36 @@ public class Table implements Serializable{
 		this.rownum++;
 	}
 	
-	
-	public void cartesianProduct(Table oth){		
-		tbnamelist.add(oth.getName());
-		for(int i=0; i<columns.size(); ++i){
-			columns.get(i).setDotAndTbname(tableName);
+	public void initCart(TableAlias t){
+		String tn = this.tableName;
+		if(t.isAlias()){
+			tn = t.getalias();
 		}
+		if(!this.tbnamelist.get(0).equals(tn)){
+			this.tbnamelist.remove(0);
+			this.tbnamelist.add(tn);
+		}
+		for(int i=0; i<columns.size(); ++i){
+			columns.get(i).setDotAndTbname(tn);
+		}
+	}
+	
+	public void cartesianProduct(Table oth, TableAlias othn) throws Exception, MyException{		
+		String tn = othn.gettbname();
+		if(othn.isAlias()){
+			tn = othn.getalias();
+		}
+		for(int i=0; i<tbnamelist.size(); ++i){
+			if(tbnamelist.get(i).equals(tn)){
+				//table name이 겹치는 경우. 새로운 오류 정의 
+				throw new MyException(String.format(Messages.NotUniqueTableAliasError, tn));
+			}
+		}
+		tbnamelist.add(tn);
 		ArrayList<Column> othClist = oth.getColumns();
 		for(int i=0; i<othClist.size(); ++i){
 			Column c = othClist.get(i);
-			c.setDotAndTbname(oth.getName());
+			c.setDotAndTbname(tn);
 			columns.add(c);
 		}
 		HashMap<Integer, ArrayList<Value>> thisentry = new HashMap<Integer, ArrayList<Value>>(this.getEntries());
@@ -208,7 +231,7 @@ public class Table implements Serializable{
 	    			s = "FOR";
 	    		}
 	    	}
-	    	System.out.format("%32s%10s%16s%16s\n", col.getName(), col.getType().getString(), col.isNotNull()? "N": "Y", s);
+	    	System.out.format("%32s%10s%16s%16s\n", col.getTbPlusCol(), col.getType().getString(), col.isNotNull()? "N": "Y", s);
 	    }
 	    
 	    System.out.println("values:");

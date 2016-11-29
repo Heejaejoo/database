@@ -17,11 +17,16 @@ public class Column implements Serializable{
 	private ArrayList<String> referingColumn = new ArrayList<String> ();
 	
 	public String getName(){
+//		if(this.isDotted)
+//			return this.tbName + "." + this.columnName;
+		return this.columnName;
+	}
+	
+	public String getTbPlusCol(){
 		if(this.isDotted)
 			return this.tbName + "." + this.columnName;
 		return this.columnName;
 	}
-	
 	public DataType getType(){
 		return this.type;
 	}

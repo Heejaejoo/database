@@ -17,12 +17,12 @@ public class BooleanTest {
 	public boolean isPredicate(){
 		return this.ispredicate;
 	}
-	public Logic evaluate(Table t, int idx) throws Exception, MyException{
+	public Logic evaluate(Table t, int idx, boolean emp) throws Exception, MyException{
 		if(this.isPredicate()){
-			return this.pred.evaluate(t, idx);
+			return this.pred.evaluate(t, idx, emp);
 		}else
 		{
-			return this.expr.evaluate(t, idx);
+			return this.expr.evaluate(t, idx, emp);
 		}
 	}
 	

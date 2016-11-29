@@ -25,15 +25,16 @@ public class DeleteQuery extends Query{
 		HashMap<Integer, Boolean> possible = new HashMap<Integer, Boolean>();
 //		ArrayList<Boolean> rowEval = new ArrayList<Boolean>();
 		ArrayList<Column> cols = t.getColumns();
-		
+		//dummy evaluate
 		//TODO: implement referential integrity
 		if(this.whereclause == null){
 			for(Integer i: t.getEntries().keySet()){
 				possible.put(i, new Boolean(true));
 			}	
 		}else{
+			whereclause.evaluate(t, 0, true);
 			for(Integer i: t.getEntries().keySet()){
-				if(whereclause.evaluate(t, i).isTrue()){
+				if(whereclause.evaluate(t, i, false).isTrue()){
 					possible.put(i, new Boolean(true));
 				}else{
 					possible.put(i, new Boolean(false));

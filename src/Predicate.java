@@ -25,11 +25,11 @@ public class Predicate {
 		return this.iscomp;
 	}
 	
-	public Logic evaluate(Table t, int idx) throws Exception, MyException{
+	public Logic evaluate(Table t, int idx, boolean empty) throws Exception, MyException{
 		if(this.iscomp){
-			return c.evaluate(t, idx);
+			return c.evaluate(t, idx, empty);
 		}else{
-			return n.evaluate(t, idx);
+			return n.evaluate(t, idx, empty);
 		}
 	}
 }

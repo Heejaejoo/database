@@ -1,7 +1,7 @@
 
 public class TableAlias {
 	private String tbname;
-	private String alias;
+	private String alias = null;
 	
 	public TableAlias(String tbna){
 		tbname  = tbna;
@@ -10,6 +10,9 @@ public class TableAlias {
 	{
 		tbname = tbn;
 		alias = al;
+	}
+	public boolean isAlias(){
+		return this.alias != null;
 	}
 	
 	public String gettbname(){

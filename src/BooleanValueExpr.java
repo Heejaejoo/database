@@ -11,14 +11,14 @@ public class BooleanValueExpr {
 		this.or.add(a);
 	}
 	//evaluation of query 
-	public Logic evaluate(Table t, int idx) throws Exception{
+	public Logic evaluate(Table t, int idx, boolean e) throws Exception{
 		int siz = this.or.size();
 		if(siz == 0){
 			throw new Exception();
 		}
-		Logic result = or.get(0).evaluate(t, idx);
+		Logic result = or.get(0).evaluate(t, idx,e);
 		for(int i=1; i<siz; ++i){
-			result = result.OR(this.or.get(i).evaluate(t, idx));
+			result = result.OR(this.or.get(i).evaluate(t, idx,e));
 		}
 		return result;
 	}

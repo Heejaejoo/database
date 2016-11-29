@@ -15,11 +15,11 @@ public class BooleanFactor {
 		return this.not;
 	}
 	
-	public Logic evaluate(Table t, int idx) throws Exception, MyException{
+	public Logic evaluate(Table t, int idx, boolean e) throws Exception, MyException{
 		if(this.isnot()){
-			return bt.evaluate(t, idx).NOT();
+			return bt.evaluate(t, idx, e).NOT();
 		}else{
-			return bt.evaluate(t, idx);
+			return bt.evaluate(t, idx, e);
 		}
 	}
 }

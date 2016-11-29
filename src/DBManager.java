@@ -85,6 +85,8 @@ public class DBManager implements Serializable{
 			}else{
 				if(num==2){
 					throw new MyException(Messages.NoSuchTable);
+				}else if (num==3){
+					throw new MyException(String.format(Messages.SelectTableExistenceError, tableName));
 				}
 				throw new MyException(Messages.ReferenceTableExistenceError);
 			}
