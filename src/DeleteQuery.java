@@ -71,7 +71,7 @@ public class DeleteQuery extends Query{
 				for(Pair<String, Integer> refering: referenced){
 					String tn = refering.getFirst();
 					Integer idx = refering.getSecond();
-					System.out.println(tn + " of " + idx.toString() + "is refering this column " + i.intValue());
+//					System.out.println(tn + " of " + idx.toString() + "is refering this column " + i.intValue());
 					Table referingt;
 					
 					if(referedTable.containsKey(tn))

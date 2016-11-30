@@ -50,7 +50,7 @@ public class SelectQuery extends Query{
 			Table curt = dbman.get(curTbname, 3);
 			t.cartesianProduct(curt, cur);
 		}
-		t.prettyPrint();
+//		t.prettyPrint();
 		HashMap<Integer, Boolean> possible = new HashMap<Integer, Boolean>();
 		int cnt = 0;
 		if(this.whereclause == null){
@@ -129,37 +129,92 @@ public class SelectQuery extends Query{
 		}
 		
 		//finialized, need pretty print
-		System.out.println("-------------------------------------------------");
+		
+    	int poslen = idxList.size();
+    	int arr[] = new int[poslen];
+    	if(star){
+        	for(int i=0; i<poslen; ++i){
+    			arr[i] = schema.get(i).getName().length();
+        	}
+    	}else{
+        	for(int i=0; i<poslen; ++i){
+        		if(columns.get(i).hasAlias()){
+    				arr[i] = columns.get(i).getAlias().length();
+    			}else{
+    				arr[i] = columns.get(i).getColName().length();
+    			}
+        	}
+    	}
+    	
+    	for(Integer i: t.getEntries().keySet()){
+	    	if(possible.get(i).booleanValue()){
+	    		ArrayList<Value> vv = t.getEntries().get(i);
+	    		for(int j=0; j<idxList.size(); ++j){
+	    			int k= idxList.get(j).intValue();
+	    			arr[j] = vv.get(k).toString().length() > arr[j] ? vv.get(k).toString().length() : arr[j];
+	    		}
+	    	}
+	    }
+    	String ss2 = "";
+    	for(int i=0; i<poslen; ++i){
+    		ss2+="+";
+    		for(int j=0; j<arr[i]; ++j){
+    			ss2+="-";
+    		}
+    	}
+    	ss2+="+";
+    	System.out.println(ss2);
+
+    	
     	String ss = "|";
     	if(star){
 		    for(int i=0; i<schema.size(); ++i){
+		    	int l = schema.get(i).getName().length();
+		    	int blank = arr[i]-l;
 		    	ss += schema.get(i).getName();
+		    	for(int j=0; j<blank; ++j){
+		    		ss += " ";
+		    	}
 		    	ss += "|";
 		    }
     	}else {
     		for(int i=0; i<idxList.size(); ++i){
+    			String rr;
     			if(columns.get(i).hasAlias()){
-    				ss += columns.get(i).getAlias();
+    				rr = columns.get(i).getAlias();
     			}else{
-    				ss += columns.get(i).getColName();
+    				rr = columns.get(i).getColName();
     			}
-    			ss += "|";
+    			int l = rr.length();
+		    	int blank = arr[i]-l;
+		    	ss += rr;
+		    	for(int j=0; j<blank; ++j){
+		    		ss += " ";
+		    	}
+		    	ss += "|";
 		    }
-    	}
+    	}    	
     	System.out.println(ss);
-	    System.out.println("-------------------------------------------------");
-	    for(Integer i: t.getEntries().keySet()){
+    	System.out.println(ss2);    	
+    	for(Integer i: t.getEntries().keySet()){
 	    	if(possible.get(i).booleanValue()){
 	    		ss = "|";
 	    		ArrayList<Value> vv = t.getEntries().get(i);
 	    		for(int j=0; j<idxList.size(); ++j){
+	    			String rr;
 	    			int k= idxList.get(j).intValue();
-	    			ss += vv.get(k).toString();
+	    			rr = vv.get(k).toString();
+	    			int l = rr.length();
+			    	int blank = arr[j]-l;
+			    	ss += rr;
+			    	for(int pk=0; pk<blank; ++pk){
+			    		ss += " ";
+			    	}
 	    			ss += "|";
 	    		}
 	    		System.out.println(ss);
-	    	    System.out.println("-------------------------------------------------");
 	    	}
-	    }
+    	}
+    	System.out.println(ss2);
 	}
 }

@@ -12,7 +12,7 @@ public class Main {
 	        parser.command();
 	      }catch (MyException e){
 	    	  System.out.println(e.getMessage());
-	    	  e.printStackTrace();
+//	    	  e.printStackTrace();
 	    	  sqlparser.ReInit(System.in);
 			  System.out.print("DB_2009-13389> ");
 	      }
@@ -24,7 +24,7 @@ public class Main {
 		    System.out.print("DB_2009-13389> ");
 	        parser.ReInit(System.in);
 	      }catch (Exception e){
-	    	  e.printStackTrace();
+//	    	  e.printStackTrace();
 	    	  System.out.println("Unhandled Exception");
 			  System.out.print("DB_2009-13389> ");
 	    	  parser.ReInit(System.in);
