@@ -44,7 +44,6 @@ public class DeleteQuery extends Query{
 				}
 			}
 		}
-		//TODO: 아무것도 없을 때 where clause들어오는거. 
 		
 		//settting is done; 
 		//check refrential integrity;
@@ -55,7 +54,6 @@ public class DeleteQuery extends Query{
 		HashMap<String, Table> referedTable = new HashMap<String, Table>();
 		ArrayList<Integer> done = new ArrayList<Integer>();
 		
-		//TODO: handle concurrent modification
 		for(Integer i: t.getEntries().keySet()){
 			if(!possible.get(i).booleanValue()){
 				//삭제할 대상이 아닌 경우 

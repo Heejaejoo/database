@@ -46,7 +46,7 @@ public class SelectQuery extends Query{
 		for(int i=1; i<tables.size(); ++i){
 			TableAlias cur = tables.get(i);
 			String curTbname = cur.gettbname();
-			System.out.println(curTbname);
+//			System.out.println(curTbname);
 			Table curt = dbman.get(curTbname, 3);
 			t.cartesianProduct(curt, cur);
 		}
